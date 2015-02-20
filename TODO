@@ -1,0 +1,1 @@
+- use clang to extract the AST, something like: clang -Xclang -ast-dump -fsyntax-only js.c

@@ -1,2 +1,4 @@
 FEEDBACK = 0
 CONFIGURATIOn = 1
+
+Z = 1.96
