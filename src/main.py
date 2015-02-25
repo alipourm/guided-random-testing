@@ -13,14 +13,15 @@ import pandas as pd
 
 
 
-def wilson_score_interval (n, p):
+def wilson_score_interval (n, n_f):
   z = consts.Z
+  p = (1.*n_f)/ n
   term1 = p + (z * z) / (2.*n)
-  plus_minus = z * sqrt ((p * (1. - p) / n) + (z * z / (4. * n * n)))
+  plus_minus = z * np.sqrt ((p * (1. - p) / n) + (z * z / (4. * n * n)))
   term2 = 1. + (z * z  / n)
-  return {'low': (term1 - plus_minus) / term2, 
-          'high':(term1 + plus_minus) / term2 }
-
+  k =  zip((term1 - plus_minus) / term2, (term1 + plus_minus) / term2)
+  
+  return k
 
 
 
@@ -40,7 +41,7 @@ def guided_random_testing(test_object, configuration):
 
 
 def conf_file(test):
-  str_features = open(test + '.conf').read().split()
+  str_features = open(get_test_name(test) + '.conf').read().split()
   return map(lambda s: int(s.replace('--', '')), str_features)
 
 
@@ -92,10 +93,8 @@ def low_outliers(data, m=1.):
   http://stackoverflow.com/questions/11686720/is-there-a-numpy-builtin-to-reject-outliers-from-a-list
   """
   t = data['cov'].unique()
-  for 
   print t['cov'].mean()- m * np.std(t['cov'])
-  return 
-{ 'locations':np.argwhere(np.mean(data2) - data > m * np.std(data2)),
+  return {'locations':np.argwhere(np.mean(data2) - data > m * np.std(data2)),
            'values': data[np.mean(data2) - data > m * np.std(data2)]}
 
 
@@ -109,20 +108,18 @@ def get_total_coverage(coverage_files):
   rest = coverage_files[1:]
   coverage_vector = pickle.load(open(first))
   for f in rest:
-    # print f
-    coverage_vector = np.add(coverage_vector, pickle.load(open(f)))
-
+    print f
+    try:
+      coverage_vector = np.add(coverage_vector, pickle.load(open(f)))
+    except EOFError:
+      pass
   return  coverage_vector
   
 
 def load_data(coverage_files):
-  df = pd.DataFrame()
-  first = coverage_files[0]
-  rest = coverage_files[1:]
-  coverage_vector = pickle.load(open(first))
-  for f in rest:
-    coverage_vector = np.add(coverage_vector, pickle.load(open(f)))
-
+  df = pd.DataFrame(get_total_coverage(coverage_files))
+  df.columns = ['cov']
+  return df
 
 def plot_coverage(cov_vector):
   hist, bins = np.histogram(x, bins=50)
@@ -141,27 +138,59 @@ def experiment_spidermonkey(observation_files):
     
     
   
+def add_features(df, coverage_files):
+  feature_occurance = {}
+  feature_freq = {}
+  for f in range(consts.FEATURES_MIN, consts.FEATURES_MAX + 1):
+    df['f' + str(f)] = 0
+    feature_freq[f] = 0
+  for cf in coverage_files:
+    print cf
+    try:
+      coverage = np.array(pickle.load(open(cf)))
+      for f in conf_file(cf):
+        df['f' + str(f)] += coverage
+        feature_freq[f] += 1
+    except EOFError:
+      print cf
+  return {'df': df,
+          'feature_freq': feature_freq}
+    
+
+def F(r, l , h):
+
+  if l <= r and r <= h: #or np.isnan(l):
+    return consts.IRRELAVENT
+  if l > r:
+    return consts.TRIGGER
+  if h < r:
+    return consts.SUPRESSOR
 
 
 
 def main():
-  df = pd.DataFrame()
-  coverage_files = glob.glob("/scratch/projects/guided_fuzzing/testcases/suite_1/*11.js.lcov")
-  print coverage_files
-  print 'Computing deprived ...'
-  coverage_vector = get_total_coverage(coverage_files)
-  deprived = low_outliers(coverage_vector)
-  print 'deprived:', deprived
-  targets = deprived['locations']
+  coverage_files = glob.glob("/scratch/projects/guided_fuzzing/testcases/suite_*/*.js.lcov")
+  # print coverage_files
+  # print 'Computing deprived ...'
+  df = load_data(coverage_files)
+  data = add_features(df, coverage_files)
+  feature_freq = data['feature_freq']
+  df = data['df']
+  for f in range(consts.FEATURES_MIN, consts.FEATURES_MAX + 1):
+    df['if' + str(f)] = wilson_score_interval(df['cov'], df['f' + str(f)])
+    df['if' + str(f)] = df['if' + str(f)].apply(lambda (l,h): (l,h) if not np.isnan(l) else (0., 1.))
+    r = float(feature_freq[f])/ len(coverage_files)
+    
+#    print 'f' + str(f), r #, df['if'+ str(f)].apply(lambda (l,h): l)
+    df['f' + str(f) + '_relation'] = df.apply(lambda row: F(r, 
+                                                            row['if'+ str(f)][0], 
+                                                            row['if'+ str(f)][1]),
+                                              axis=1)
+    
 
-  print len(targets)
+  df.to_csv('data.csv')
   
-  exit(0)
-  for t in targets:
-    if coverage_vector[t] != 0:
-      covering_tests = get_covering_tests(t, coverage_files)
-      print compute_wilson(covering_tests, t)
-  
+
 
 main()
 
