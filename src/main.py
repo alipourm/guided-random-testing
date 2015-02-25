@@ -158,8 +158,7 @@ def add_features(df, coverage_files):
     
 
 def F(r, l , h):
-
-  if l <= r and r <= h: #or np.isnan(l):
+  if l <= r and r <= h:
     return consts.IRRELAVENT
   if l > r:
     return consts.TRIGGER
@@ -170,8 +169,6 @@ def F(r, l , h):
 
 def main():
   coverage_files = glob.glob("/scratch/projects/guided_fuzzing/testcases/suite_*/*.js.lcov")
-  # print coverage_files
-  # print 'Computing deprived ...'
   df = load_data(coverage_files)
   data = add_features(df, coverage_files)
   feature_freq = data['feature_freq']

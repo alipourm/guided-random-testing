@@ -4,8 +4,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-df = pd.DataFrame.from_csv("data.csv")
-relations =[k for k in df.columns if '_relation'in k]
 fst = lambda (x,y):x
 snd = lambda (x,y):y
 tonum = lambda s: int(re.findall("\d+", s)[0])
@@ -27,6 +25,8 @@ def getX(l):
 def getY(l):
   return np.array(map(snd, l))
 
+df = pd.DataFrame.from_csv("data.csv")
+relations =[k for k in df.columns if '_relation'in k]
 
 
 suppress_dist = sort_list([(r, len(df[df[r] == 'S'])) for r in relations])
@@ -43,3 +43,8 @@ ax.set_ylabel('Number of Targets')
 ax.set_xticks(getX(trigger_dist)+width)
 ax.set_xticklabels(getX(trigger_dist))
 plt.show()
+
+pd['total']
+
+
+df['total'] = df.apply(lambda row)
