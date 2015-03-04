@@ -6,7 +6,7 @@ import time
 def run(cmd):
     return commands.getstatusoutput(cmd)
 
-TIMELENGHT = 60 # 1 minute
+TIMELENGHT = 600 # 1 minute
 
 i = 1
 start = time.time()
