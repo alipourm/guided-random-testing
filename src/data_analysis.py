@@ -28,7 +28,6 @@ def getY(l):
 df = pd.DataFrame.from_csv("/scratch/projects/guided-random-testing/src/data.csv")
 relations =[k for k in df.columns if '_relation'in k]
 
-
 # suppress_dist = sort_list([(r, len(df[df[r] == 'S'])) for r in relations])
 # trigger_dist = sort_list([(r, len(df[df[r] == 'T'])) for r in relations])
 #
@@ -87,9 +86,8 @@ targets.to_csv('/scratch/projects/guided-random-testing/src/targets.csv')
 
 
 plt.figure()
-gr.plot(kind='scatter', x='average', y='count', c='I', s=267.)
 plt.show()
-
+plt.close()
 #   x.append(str(g))
 
 #   y.append(len(g))
