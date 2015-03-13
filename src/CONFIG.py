@@ -4,7 +4,7 @@ curdir = os.getcwd()+ os.sep
 
 JS = "/scratch/papers/icst2015paper/js1.6/src/Linux_All_DBG.OBJ/js -f "
 #"../js1.6/Linux_All_DBG.OBJ/js -f "
-GCOVDIR = "/scratch/papers/icst2015paper/js1.6/src/Linux_All_DBG.OBJ/"
+GCOVDIR = "/scratch/papers/icst2015paper/js1.6/src/"
 
 OBJDIR  = "/scratch/papers/icst2015paper/js1.6/src/Linux_All_DBG.OBJ/"
 

@@ -26,7 +26,7 @@ def isSubsumed(cov1, cov2):  # cov1 = cov2 - extra + loss
 class Coverage: 
     def execute(self,cmd):
         status , output = commands.getstatusoutput(cmd)
-        print cmd, output
+        # print cmd, output
 
     def __init__(self, test):
         self.JS = CONFIG.JS
@@ -48,42 +48,23 @@ class Coverage:
     def calculate(self):
         test = self.tc
         self.execute("rm -rf " + self.OBJDIR + "*.gcda")
-        self.execute("rm -rf " + self.OBJDIR + "*.gcov")
-        self.execute("rm -rf " + self.GCOVDIR + "*.gcda")
-        self.execute("rm -rf " + self.GCOVDIR + "*.gcov")
+        self.execute("rm -rf *.gcov")
         vgrun = "vgrun_" + test.split("/")[-1] +".js"
         self.execute("cp jsfunrun.js " + vgrun)
         self.execute("cat " + test + " >> " + vgrun)
-        # Write input to `vgrun.js'
         out = open(vgrun, 'a')
         out.write('\ndumpln("ALL OK");\n')
         out.flush()
         out.close()
         start_time = time.time()
-        self.execute(self.JS + " " + vgrun   )
-        self.elapsed = time.time() - start_time
-        oldpath = os.getcwd()
-        os.chdir(self.GCOVDIR)
-       
-        self.execute("gcov js  -o " + self.OBJDIR )
-        for f in glob.glob(self.GCOVDIR + "*.c"):
-            self.execute("gcov -f -b " + f)
-        for f in glob.glob(self.GCOVDIR + "*.o"):
-            self.execute("gcov -f -b --object-file " + f)
-        for f in glob.glob(self.GCOVDIR + "*.so"):
-            self.execute("gcov -f -b " + f + " ")
-        for f in glob.glob(self.GCOVDIR + "*.a"):
-            self.execute("gcov -f -b " + f)
-        gcovfiles = os.listdir(os.getcwd())
-        GCOVDIR = os.getcwd()+os.sep
+        self.execute(self.JS + " " + vgrun + ' >& /dev/null')
 
-        os.chdir(oldpath)
-        gcovfiles = sorted(gcovfiles)
-        # print 'gcovfiles:', gcovfiles
+        self.elapsed = time.time() - start_time
+        for f in glob.glob(self.GCOVDIR + "*.c"):
+            self.execute("gcov -f -b -o {0} {1} >& /dev/null".format(CONFIG.OBJDIR, f))
+        gcovfiles = sorted(glob.glob('*.gcov'))
         for f in gcovfiles:
-            if ".gcov" in f:
-                print f
-                for l in open(GCOVDIR + f):
+                for l in open(f):
                     ls = l.split();
                     # print l
                     if (ls[0] == "-:"):
@@ -112,11 +93,8 @@ class Coverage:
                         else:
                             self.branch_cov.append(0)
 
+        self.execute("rm -f " + vgrun)
 
-
-        # subprocess.call(["rm -rf " + self.OBJDIR + "*.gcda"], shell=True)
-        # subprocess.call(["rm -rf " + self.GCOVDIR + "*.gcov"], shell=True)
-        # subprocess.call(["rm -rf " + vgrun], shell=True)
         
 
     def choose(self,mode):
@@ -175,4 +153,3 @@ class Coverage:
     def get_total_function(self):
         k = [l for l in self.function_cov if l != 0]
         return len(k)
-

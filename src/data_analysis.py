@@ -11,16 +11,16 @@ tonum = lambda s: int(re.findall("\d+", s)[0])
 def compose(f,g):
   return lambda x: f(g(x))
 
-
-
 def sort_list(l):
   x = map(compose(tonum, fst), l)
   y = map(snd, l)
   xy = zip(x, y)
   return sorted(xy, key=fst)
 
+
 def getX(l):
   return np.array(map(fst, l))
+
 
 def getY(l):
   return np.array(map(snd, l))
@@ -47,6 +47,7 @@ relations =[k for k in df.columns if '_relation'in k]
 def get_rels(l, r):
   return [i for i in l if i == r]
 
+
 def count(l):
   I = get_rels(l,'I')
   S = get_rels(l,'S')
@@ -54,6 +55,7 @@ def count(l):
   return {'I':len(I),
           'S':len(S),
           'T':len(T)}
+
 
 def agg_lines(df):
   lines = []
