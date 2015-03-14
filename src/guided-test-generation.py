@@ -6,6 +6,8 @@ import os
 import numpy as np
 from coverage import Coverage
 import pickle
+import consts
+import re
 # need for paralleization -- bottleneck is coverage
 
 
@@ -71,7 +73,7 @@ def generate_tests(time_length, directory, conf):
       dump_coverage(tc_name)
     else:
       print 'Retrying', i
-  run('mv tc_* {0}'.format(directory))
+  print run('mv tc_* {0}'.format(directory))
 
 
 def get_rels(l, r):
@@ -103,7 +105,7 @@ def pick_target(df):
   gr['I']= gr['TEMP'].apply(lambda row: count(row)['I'])
   gr['T']= gr['TEMP'].apply(lambda row: count(row)['T'])
   gr['S']= gr['TEMP'].apply(lambda row: count(row)['S'])
-  gr = gr[(gr['T'] + gr['S'] > 0) & (gr['average'] < 200) & (gr['I']>250)]
+  gr = gr[(gr['T'] + gr['S'] > 0) & (gr['average'] > 100) & gr['average'] < 500  & (gr['I']>250)]
   df2 = df.join(gr, how='right', on=gr.index.names)
   targets = df2[df2['T']<4][relations]
   return targets
@@ -114,9 +116,10 @@ def get_feature(f):
   return re.findall(r'\d+', f)[0]
 
 
+
 def get_conf(targets):
   l = []
-  for f in relations:
+  for f in ['f'+str(i) + '_relation' for i in range(consts.FEATURES_MIN, consts.FEATURES_MAX + 1)]:
     feature_num = get_feature(f)
     if 'T' in targets[f]: 
       l.append('+' + feature_num)
@@ -132,27 +135,31 @@ TARGET_CONF = 'target.cfg'
 
 
 
-import time
+import time, glob
 def main(experiment_no):
-  cur_dir = os.curdir
+  LOG.info('experiment: ' + str(experiment_no))
+  cur_dir = os.getcwd()
   experiment_dir = os.path.join(cur_dir, str(experiment_no))
   os.mkdir(experiment_dir)
-  # os.chdir(experiment_dir)
   directory = os.path.join(experiment_dir, 'init')
+  os.mkdir(directory)
   LOG.info('Generating Initial Test Suite Started')
   generate_tests(3600, directory, INIT_CONF)
-  LOG.info('Generating Initial Test Suite Ended')
 
+  LOG.info('Generating Initial Test Suite Ended' + ' ' + directory)
 
+  print directory
   LOG.info('Calculating Targets Started')
-  target_relation = interaction.get_feature_relations(directory + '/*.lcov')
-  target_relation.to_csv('{0}/relations.csv', directory)
+  target_relation = interaction.get_feature_relations(glob.glob(directory + '/*.lcov'))
+  print target_relation
+  target_relation.to_csv('{0}/relations.csv'.format(directory))
   LOG.info('Calculating Targets Ended')
- 
-
+  
+#  target_relation = pd.DataFrame.from_csv('relations.csv'.format(directory))
+  
   LOG.info('Pick Targets Started')
   targets = pick_target(target_relation)
-  confs = get_conf(targets)
+  conf = get_conf(targets)
   conf_file = open(TARGET_CONF, 'w')
   conf_file.write(conf)
   conf_file.flush()
@@ -162,11 +169,12 @@ def main(experiment_no):
   LOG.info('Generate MiniTests for Targets Started')
   for i in range(15):
     directory = os.path.join(experiment_dir, str(i))
-    generte_tests(600, directory, TARGET_CONF)
+    os.mkdir(directory)
+    generate_tests(600, directory, TARGET_CONF)
   LOG.info('Generate MiniTests for Targets Ended')
 
 
 
-
-
-main(1)
+for i in range(10):
+  print i
+  main(i)
