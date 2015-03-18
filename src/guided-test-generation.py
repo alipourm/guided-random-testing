@@ -8,6 +8,7 @@ from coverage import Coverage
 import pickle
 import consts
 import re
+import random
 # need for paralleization -- bottleneck is coverage
 
 
@@ -74,8 +75,6 @@ def generate_tests(time_length, directory, conf):
     else:
       print 'Retrying', i
   print run('mv tc_* {0}'.format(directory))
-
-
 def get_rels(l, r):
   return [i for i in l if i == r]
 
@@ -96,19 +95,30 @@ def agg_lines(df):
   return lines
 
 
-def pick_target(df):
-  relations =[k for k in df.columns if '_relation'in k]
+LOWER_PRECENTAGE = 25
+HIGHER_PERCENTAGE = 50
+SAMPLE_SIZE = 15
+
+def pick_target(df, relations, selection_fn):
   df['lineno']= df.index.copy()
   groups = df.groupby(relations)
-  gr = groups['cov'].agg({'average':np.mean, 'count': np.size})
+  gr = groups['cov'].agg({'average':np.mean, 'median':np.median, 'count': np.size})
   gr['TEMP']=gr.index.copy()
   gr['I']= gr['TEMP'].apply(lambda row: count(row)['I'])
   gr['T']= gr['TEMP'].apply(lambda row: count(row)['T'])
   gr['S']= gr['TEMP'].apply(lambda row: count(row)['S'])
-  gr = gr[(gr['T'] + gr['S'] > 0) & (gr['average'] > 100) & gr['average'] < 500  & (gr['I']>250)]
-  df2 = df.join(gr, how='right', on=gr.index.names)
-  targets = df2[df2['T']<4][relations]
-  return targets
+  [l,h] = np.percentile(gr['median'].values, [LOWER_PRECENTAGE, HIGHER_PERCENTAGE])
+  gr = selection_fn(gr, l, h)
+  print 'after call',  len(gr)
+  try:  samples = gr.loc[random.sample(gr.index, SAMPLE_SIZE)]
+  except ValueError: 
+      LOG.debug('Sample larger than population')
+      samples = gr
+  return samples.index.get_values()
+
+
+
+
 
 
 def get_feature(f):
@@ -117,23 +127,35 @@ def get_feature(f):
 
 
 
-def get_conf(targets):
-  l = []
-  for f in ['f'+str(i) + '_relation' for i in range(consts.FEATURES_MIN, consts.FEATURES_MAX + 1)]:
-    feature_num = get_feature(f)
-    if 'T' in targets[f]: 
-      l.append('+' + feature_num)
-    elif 'S' in targets[f]:
-      l.append('+' + feature_num)
-  return '\n'.join(l)
+def get_conf(values, relations):
+    l = []
+    z = zip(values, relations)
+    for x in z:
+        feature_num = get_feature(x[1])
+        if x[0] == 'T':
+            l.append('+' + feature_num)
+        elif x[0] == 'S':
+            l.append('-' + feature_num)
+    return '\n'.join(l)
 
 
 
 INIT_CONF = 'init.cfg'
 TARGET_CONF = 'target.cfg'
+SEEDTESTGEN_TIME = 3600 
+GUIDEDTESTGEN_TIME = 600
+
+def select_all(gr, l, h):
+    return gr
+
+def select_2nd_quantile(gr, l, h): 
+    return gr[(gr['median'] > l) & (gr['median'] < h)]  
+
+def select_2nd_quantile_but_concise(gr, l, h): 
+    return gr[(gr['median'] > l) & (gr['median'] < h) & (gr['I']>250) & (gr['T'] + gr['S'] > 0)]
 
 
-
+selection_fn = [select_2nd_quantile, select_2nd_quantile_but_concise, select_all]
 
 import time, glob
 def main(experiment_no):
@@ -144,7 +166,7 @@ def main(experiment_no):
   directory = os.path.join(experiment_dir, 'init')
   os.mkdir(directory)
   LOG.info('Generating Initial Test Suite Started')
-  generate_tests(3600, directory, INIT_CONF)
+  generate_tests(SEEDTESTGEN_TIME, directory, INIT_CONF)
 
   LOG.info('Generating Initial Test Suite Ended' + ' ' + directory)
 
@@ -154,27 +176,34 @@ def main(experiment_no):
   print target_relation
   target_relation.to_csv('{0}/relations.csv'.format(directory))
   LOG.info('Calculating Targets Ended')
-  
-#  target_relation = pd.DataFrame.from_csv('relations.csv'.format(directory))
-  
-  LOG.info('Pick Targets Started')
-  targets = pick_target(target_relation)
-  conf = get_conf(targets)
-  conf_file = open(TARGET_CONF, 'w')
-  conf_file.write(conf)
-  conf_file.flush()
-  conf_file.close()
-  LOG.info('Pick Targets Ended')
 
-  LOG.info('Generate MiniTests for Targets Started')
-  for i in range(15):
-    directory = os.path.join(experiment_dir, str(i))
-    os.mkdir(directory)
-    generate_tests(600, directory, TARGET_CONF)
+  LOG.info('Pick Targets Started')
+  relations =[k for k in target_relation.columns if '_relation'in k]
+  print 'relations:', relations
+  for fn in selection_fn:
+      print fn.__name__
+      targets = pick_target(target_relation, relations, fn)
+      LOG.info('Pick Targets Ended')
+      LOG.info('Generate MiniTests for Targets Started')
+      i = 0
+      os.mkdir(os.path.join(experiment_dir, fn.__name__))
+      print len(targets)
+      for t in targets:
+          conf = get_conf(t, relations)
+          LOG.info('Generate MiniTests for Targets Started' )
+          LOG.info('Confg:' + conf)
+          conf_file = open(TARGET_CONF, 'w')
+          conf_file.write(conf)
+          conf_file.flush()
+          conf_file.close()
+          directory = os.path.join(experiment_dir, fn.__name__,  str(i))
+          os.mkdir(directory)
+          generate_tests(GUIDEDTESTGEN_TIME, directory, TARGET_CONF)
+          i = i + 1 
   LOG.info('Generate MiniTests for Targets Ended')
 
 
 
-for i in range(10):
+for i in range(20):
   print i
   main(i)

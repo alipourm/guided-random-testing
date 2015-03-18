@@ -10,18 +10,31 @@ import pandas as pd
 
 
 
+def F((l , h), r):
+  if np.isnan(l):
+    l = 0
+    h = 1
+  if l <= r and r <= h:
+    return consts.IRRELAVENT
+  if l > r:
+    return consts.TRIGGER
+  if h < r:
+    return consts.SUPRESSOR
 
 
 
-def wilson_score_interval (n, n_f):
+def wilson_score_interval (n, n_f, r):
   z = consts.Z
   p = (1.*n_f)/ n
   term1 = p + (z * z) / (2.*n)
   plus_minus = z * np.sqrt ((p * (1. - p) / n) + (z * z / (4. * n * n)))
   term2 = 1. + (z * z  / n)
-  k =  zip((term1 - plus_minus) / term2, (term1 + plus_minus) / term2)
-  
-  return k
+  low = (term1 - plus_minus) / term2
+  high = (term1 + plus_minus) / term2
+  k =  zip(low, high)
+  k2 = pd.Series(k)
+  s  = k2.apply(lambda x: F(x, r))
+  return s
 
 
 
@@ -157,13 +170,6 @@ def add_features(df, coverage_files):
           'feature_freq': feature_freq}
     
 
-def F(r, l , h):
-  if l <= r and r <= h:
-    return consts.IRRELAVENT
-  if l > r:
-    return consts.TRIGGER
-  if h < r:
-    return consts.SUPRESSOR
 
 
 
@@ -175,15 +181,13 @@ def get_feature_relations(coverage_files):
   # df = df1[df1['cov'] > 0]
   for f in range(consts.FEATURES_MIN, consts.FEATURES_MAX + 1):
     print f 
-    df['if' + str(f)] = wilson_score_interval(df['cov'], df['f' + str(f)])
-    
-    # df['if' + str(f)] = df['if' + str(f)].apply(lambda (l,h): (l,h) if not np.isnan(l) else (0., 1.))
     r = float(feature_freq[f])/ len(coverage_files)
-    
-    df['f' + str(f) + '_relation'] = df.apply(lambda row: F(r, 
-                                                            row['if'+ str(f)][0], 
-                                                            row['if'+ str(f)][1]),
-                                              axis=1)
+    df['f' + str(f) + '_relation'] = wilson_score_interval(df['cov'], df['f' + str(f)], r)
+#    df['if' + str(f)] = df['if' + str(f)].apply(lambda (l,h): (l,h) if not np.isnan(l) else (0., 1.))
+#    df['f' + str(f) + '_relation'] = df.apply(lambda row: F(r, 
+#                                                            row['if'+ str(f)][0], 
+#                                                            row['if'+ str(f)][1]),
+#                                              axis=1)
 
   
   return df
