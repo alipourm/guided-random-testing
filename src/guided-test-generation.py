@@ -204,6 +204,6 @@ def main(experiment_no):
 
 
 
-for i in range(20):
+for i in range(3,20):
   print i
   main(i)

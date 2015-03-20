@@ -26,6 +26,7 @@ def isSubsumed(cov1, cov2):  # cov1 = cov2 - extra + loss
 class Coverage: 
     def execute(self,cmd):
         status , output = commands.getstatusoutput(cmd)
+        return status
         # print cmd, output
 
     def __init__(self, test):
@@ -57,7 +58,8 @@ class Coverage:
         out.flush()
         out.close()
         start_time = time.time()
-        self.execute(self.JS + " " + vgrun + ' >& /dev/null')
+        if self.execute('timeout 10 ' + self.JS + " " + vgrun + ' >& /dev/null') == 124: # timeout
+            return
 
         self.elapsed = time.time() - start_time
         for f in glob.glob(self.GCOVDIR + "*.c"):
