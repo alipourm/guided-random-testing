@@ -22,12 +22,19 @@ def isSubsumed(cov1, cov2):  # cov1 = cov2 - extra + loss
     k["extra"]= extra
     return k
 
+class InfiniteLoopError(Exception):
+    def __init__(self, value):
+        self.value = value
+    
+    def __str__(self):
+        return 'Inifinte Loop in ' + repr(value)
 
 class Coverage: 
     def execute(self,cmd):
         status , output = commands.getstatusoutput(cmd)
+#        print cmd, output
         return status
-        # print cmd, output
+        
 
     def __init__(self, test):
         self.JS = CONFIG.JS
@@ -41,6 +48,7 @@ class Coverage:
         self.tc = test
         self.elapsed = 0
         self.functions = []
+        self.vgrun = "vgrun_" + self.tc.split("/")[-1] +".js"
         self.calculate()
 
     def get_time(self):
@@ -50,7 +58,7 @@ class Coverage:
         test = self.tc
         self.execute("rm -rf " + self.OBJDIR + "*.gcda")
         self.execute("rm -rf *.gcov")
-        vgrun = "vgrun_" + test.split("/")[-1] +".js"
+        vgrun = self.vgrun
         self.execute("cp jsfunrun.js " + vgrun)
         self.execute("cat " + test + " >> " + vgrun)
         out = open(vgrun, 'a')
@@ -58,16 +66,20 @@ class Coverage:
         out.flush()
         out.close()
         start_time = time.time()
-        if self.execute('timeout 10 ' + self.JS + " " + vgrun + ' >& /dev/null') == 124: # timeout
-            return
 
-        self.elapsed = time.time() - start_time
+        if self.execute('timeout 10 ' + self.JS + " " + vgrun + ' >& /dev/null') == 124: # timeout
+            raise InfiniteLoopError(self.tc)
+
         for f in glob.glob(self.GCOVDIR + "*.c"):
-            self.execute("gcov -f -b -o {0} {1} >& /dev/null".format(CONFIG.OBJDIR, f))
+           self.execute("gcov -f -b -o {0} {1} >& /dev/null".format(CONFIG.OBJDIR, f))
+        self.collect_coverage()
+        self.cleanup()
+
+    def collect_coverage(self):
         gcovfiles = sorted(glob.glob('*.gcov'))
         for f in gcovfiles:
-                for l in open(f):
-                    ls = l.split();
+            for l in open(f):
+                    ls = l.split()
                     # print l
                     if (ls[0] == "-:"):
                         pass # none executable
@@ -95,7 +107,8 @@ class Coverage:
                         else:
                             self.branch_cov.append(0)
 
-        self.execute("rm -f " + vgrun)
+    def cleanup(self):
+        self.execute("rm -f " + self.vgrun)
 
         
 

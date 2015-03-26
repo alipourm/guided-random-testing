@@ -71,7 +71,11 @@ def generate_tests(time_length, directory, conf):
       outfn.flush()
       outfn.close()
       i += 1 
-      dump_coverage(tc_name)
+      try:
+          dump_coverage(tc_name)
+      except ValueError:#Exception: 
+          print('problem in coverage')
+          LOG.error('COVERAGE EXCEPTION ' + tc_name)
     else:
       print 'Retrying', i
   print run('mv tc_* {0}'.format(directory))
@@ -204,6 +208,6 @@ def main(experiment_no):
 
 
 
-for i in range(3,20):
+for i in range(1 ,5):
   print i
   main(i)
