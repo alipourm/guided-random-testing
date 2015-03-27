@@ -35,16 +35,16 @@ def getExperimentMacroNumber(tcpath):
 def load(filename):
     try:
         f = open(filename)
-        return np.array(pickle.load(f))
+        return np.packbits(np.array(pickle.load(f)))
     except IOError:
-        return np.array([]) # for non-terminating test cases returns an empty array
+        return np.packbits(np.array([])) # for non-terminating test cases returns an empty array
 
 
 
 # extract all file names
 if not os.path.exists(COVERAGEFILENAMES):
     coveragefilenames = []
-    for dirpath, dirnames, filenames in os.walk('data'):
+    for dirpath, dirnames, filenames in os.walk('../data'):
         for f in filenames:
             print f
             if f.endswith('js'):
@@ -65,8 +65,8 @@ df['experimentno_macro'] = df['tcpath'].apply(getExperimentMacroNumber)
 df['experimentno_micro'] = df['tcpath'].apply(getExperimentMicroNumber)
 
 df['lcov'] = df['tcpath'].apply(lambda tcpath: load(tcpath + '.lcov'))
-df['bcov'] = df['tcpath'].apply(lambda tcpath:load(tcpath + '.bcov'))
-df['fcov'] = df['tcpath'].apply(lambda tcpath:load(tcpath + '.fncov'))
+# df['bcov'] = df['tcpath'].apply(lambda tcpath:load(tcpath + '.bcov'))
+# df['fcov'] = df['tcpath'].apply(lambda tcpath:load(tcpath + '.fncov'))
 
 
 df.to_csv('COVERAGES.CSV')
