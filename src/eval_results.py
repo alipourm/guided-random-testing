@@ -21,7 +21,7 @@ def getSelectionMethod(tcpath):
     if 'init' in tcpath:
         return 'init'
     tcpathparts = tcpath.split(os.sep)
-    print tcpath
+#    print tcpath
     return tcpathparts[-3]
 
 def getExperimentMacroNumber(tcpath):
@@ -35,9 +35,12 @@ def getExperimentMacroNumber(tcpath):
 def load(filename):
     try:
         f = open(filename)
-        return np.packbits(np.array(pickle.load(f)))
+	s = ''.join(map(lambda n: str(n), pickle.load(f)))
+	return s
+        # return np.packbits(np.array(pickle.load(f)))
     except IOError:
-        return np.packbits(np.array([])) # for non-terminating test cases returns an empty array
+	return ''
+        # return np.packbits(np.array([0])) # for non-terminating test cases returns an empty array
 
 
 
@@ -64,6 +67,7 @@ df['slection_method'] = df['tcpath'].apply(getSelectionMethod)
 df['experimentno_macro'] = df['tcpath'].apply(getExperimentMacroNumber)
 df['experimentno_micro'] = df['tcpath'].apply(getExperimentMicroNumber)
 
+print 'retrieving coverage info'
 df['lcov'] = df['tcpath'].apply(lambda tcpath: load(tcpath + '.lcov'))
 # df['bcov'] = df['tcpath'].apply(lambda tcpath:load(tcpath + '.bcov'))
 # df['fcov'] = df['tcpath'].apply(lambda tcpath:load(tcpath + '.fncov'))
