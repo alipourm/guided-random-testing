@@ -1,8 +1,9 @@
 import os
 import pickle
 import numpy as np
+import sys
 
-for root, dirnames, filenames in os.walk('../data'):
+for root, dirnames, filenames in os.walk(sys.argv[1]):
     linecov= np.array([])
     branchcov = np.array([])
     functioncov = np.array([])
