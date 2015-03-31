@@ -32,8 +32,7 @@ class InfiniteLoopError(Exception):
 class Coverage: 
     def execute(self,cmd):
         status , output = commands.getstatusoutput(cmd)
-#        print cmd, output
-        return status
+        return status, output
         
 
     def __init__(self, test):
@@ -48,32 +47,44 @@ class Coverage:
         self.tc = test
         self.elapsed = 0
         self.functions = []
-        self.vgrun = "vgrun_" + self.tc.split("/")[-1] +".js"
+        self.vgrun = self.tc +".vgrun"
         self.calculate()
 
-    def get_time(self):
-        return self.elapsed
+
 
     def calculate(self):
-        test = self.tc
         self.execute("rm -rf " + self.OBJDIR + "*.gcda")
         self.execute("rm -rf *.gcov")
-        vgrun = self.vgrun
-        self.execute("cp jsfunrun.js " + vgrun)
-        self.execute("cat " + test + " >> " + vgrun)
-        out = open(vgrun, 'a')
-        out.write('\ndumpln("ALL OK");\n')
-        out.flush()
-        out.close()
-        start_time = time.time()
-
-        if self.execute('timeout 10 ' + self.JS + " " + vgrun + ' >& /dev/null') == 124: # timeout
-            raise InfiniteLoopError(self.tc)
-
+        self.executetc()
         for f in glob.glob(self.GCOVDIR + "*.c"):
            self.execute("gcov -f -b -o {0} {1} >& /dev/null".format(CONFIG.OBJDIR, f))
         self.collect_coverage()
-        self.cleanup()
+ 
+
+
+
+    def executetc(self, js=None):
+        test = self.tc
+        vgrun = self.vgrun
+        if not os.path.exists(vgrun):
+            self.execute("cp jsfunrun.js " + vgrun)
+            self.execute("cat " + test + " >> " + vgrun)
+            out = open(vgrun, 'a')
+            out.write('\ndumpln("ALL OK");\n')
+            out.flush()
+            out.close()
+
+        if js is None:
+            status, output =  self.execute('timeout 10 ' + self.JS + " " + vgrun) 
+        else:
+            status, output =  self.execute('timeout 10 ' + js + " -f  " + vgrun) 
+        # self.execute("rm -f " + self.vgrun) # NOTE: no cleanup, all vgrun's must be deleted after the run finishes
+            
+        if status == 124: # timeout
+            raise InfiniteLoopError(self.tc)
+
+        return output
+
 
     def collect_coverage(self):
         gcovfiles = sorted(glob.glob('*.gcov'))
@@ -107,9 +118,8 @@ class Coverage:
                         else:
                             self.branch_cov.append(0)
 
-    def cleanup(self):
-        self.execute("rm -f " + self.vgrun)
-
+ 
+    
         
 
     def choose(self,mode):
