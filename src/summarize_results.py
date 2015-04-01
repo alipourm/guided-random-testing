@@ -1,8 +1,12 @@
 import os
 import pickle
 import numpy as np
+import pandas as pd
+import sys
 
-for root, dirnames, filenames in os.walk('../data'):
+
+def dumpnpyfiles(dir):
+  for root, dirnames, filenames in os.walk(dir):
     linecov= np.array([])
     branchcov = np.array([])
     functioncov = np.array([])
@@ -36,7 +40,20 @@ for root, dirnames, filenames in os.walk('../data'):
     np.save(os.path.join(root, 'linecov'), linecov)
     np.save(os.path.join(root, 'branchcov'), branchcov)
     np.save(os.path.join(root, 'functioncov'), functioncov)
-
     np.save(os.path.join(root, 'numinf'), numinf)
 
 
+def gathernypfiles(dir):
+	coverage = {}
+	for root, dirs, filenames in os.walk(dir):
+		if 'linecov.npy' in filenames:
+			data = {}
+			covs = [f for f in filenames if f.endswith('.npy')]
+			for c in covs:
+				print c
+				data[c] = ''.join(map(lambda n: str(n), np.load(os.path.join(root, c)).tolist()))
+			coverage[root] = data
+	return pd.DataFrame(coverage)
+
+df = gathernypfiles(sys.argv[1])
+df.to_csv('goodsummary.csv')

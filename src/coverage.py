@@ -57,7 +57,7 @@ class Coverage:
     def calculate(self):
         test = self.tc
         self.execute("rm -rf " + self.OBJDIR + "*.gcda")
-        self.execute("rm -rf *.gcov")
+        self.execute("rm -rf " + self.SRCDIR + "*.gcov")
         vgrun = self.vgrun
         self.execute("cp jsfunrun.js " + vgrun)
         self.execute("cat " + test + " >> " + vgrun)
