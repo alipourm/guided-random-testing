@@ -7,6 +7,8 @@ import glob
 import time
 
 
+
+
 def isSubsumed(cov1, cov2):  # cov1 = cov2 - extra + loss
     if len(cov1) != len(cov2):
         print "ERROR: incomparable coverage vectors"
@@ -29,12 +31,14 @@ class InfiniteLoopError(Exception):
     def __str__(self):
         return 'Inifinte Loop in ' + repr(value)
 
+
+def execute(cmd):
+    status , output = commands.getstatusoutput(cmd)
+    return status, output
+ 
+
+
 class Coverage: 
-    def execute(self,cmd):
-        status , output = commands.getstatusoutput(cmd)
-#        print cmd, output
-        return status
-        
 
     def __init__(self, test):
         self.JS = CONFIG.JS
@@ -48,32 +52,43 @@ class Coverage:
         self.tc = test
         self.elapsed = 0
         self.functions = []
-        self.vgrun = "vgrun_" + self.tc.split("/")[-1] +".js"
+        self.vgrun = self.tc +".vgrun"
         self.calculate()
 
-    def get_time(self):
-        return self.elapsed
+  
 
     def calculate(self):
+        execute("rm -rf " + self.OBJDIR + "*.gcda")
+        execute("rm -rf " + self.GCOVDIR + "*.gcov")
+        executetc()
+        for f in glob.glob(self.SRCDIR + "*.c"):
+           execute("gcov -f -b -o {0} {1} >& /dev/null".format(CONFIG.OBJDIR, f))
+        self.collect_coverage()
+
+
+
+
+    def executetc(self, js=None):
         test = self.tc
-        self.execute("rm -rf " + self.OBJDIR + "*.gcda")
-        self.execute("rm -rf " + self.SRCDIR + "*.gcov")
         vgrun = self.vgrun
-        self.execute("cp jsfunrun.js " + vgrun)
-        self.execute("cat " + test + " >> " + vgrun)
+        execute("cp jsfunrun.js " + vgrun)
+        execute("cat " + test + " >> " + vgrun)
         out = open(vgrun, 'a')
         out.write('\ndumpln("ALL OK");\n')
         out.flush()
         out.close()
-        start_time = time.time()
 
-        if self.execute('timeout 10 ' + self.JS + " " + vgrun + ' >& /dev/null') == 124: # timeout
+        if js is None:
+            status, output =  execute('timeout 10 ' + self.JS + " " + vgrun) 
+        else:
+            status, output =  execute('timeout 10 ' + js + " -f  " + vgrun) 
+        execute("rm -f " + self.vgrun) 
+            
+        if status == 124: # timeout
             raise InfiniteLoopError(self.tc)
 
-        for f in glob.glob(self.GCOVDIR + "*.c"):
-           self.execute("gcov -f -b -o {0} {1} >& /dev/null".format(CONFIG.OBJDIR, f))
-        self.collect_coverage()
-        self.cleanup()
+        return output
+
 
     def collect_coverage(self):
         gcovfiles = sorted(glob.glob('*.gcov'))
@@ -107,9 +122,8 @@ class Coverage:
                         else:
                             self.branch_cov.append(0)
 
-    def cleanup(self):
-        self.execute("rm -f " + self.vgrun)
-
+ 
+    
         
 
     def choose(self,mode):
@@ -168,3 +182,9 @@ class Coverage:
     def get_total_function(self):
         k = [l for l in self.function_cov if l != 0]
         return len(k)
+
+
+def dumpcoverage(directory):
+	execute("rm -rf " + self.OBJDIR + "*.gcda")
+    execute("rm -rf " + self.GCOVDIR + "*.gcov")
+	  	

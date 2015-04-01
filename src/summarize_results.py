@@ -51,9 +51,11 @@ def gathernypfiles(dir):
 			covs = [f for f in filenames if f.endswith('.npy')]
 			for c in covs:
 				print c
-				data[c] = ''.join(map(lambda n: str(n), np.load(os.path.join(root, c)).tolist()))
+				data[c] = ','.join(map(lambda n: str(n), np.load(os.path.join(root, c)).tolist()))
 			coverage[root] = data
-	return pd.DataFrame(coverage)
+	return pd.DataFrame(coverage).transpose()
 
-df = gathernypfiles(sys.argv[1])
-df.to_csv('goodsummary.csv')
+indir = sys.argv[1]
+out = sys.argv[2]
+df = gathernypfiles(indir)
+df.to_csv(out)
