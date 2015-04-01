@@ -46,12 +46,13 @@ def dumpnpyfiles(dir):
 def gathernypfiles(dir):
 	coverage = {}
 	for root, dirs, filenames in os.walk(dir):
-		if 'linecov.npy' in filenames:
+          
+		if 'linecov.npy' in filenames and 'tc_0000001.js' in filenames:
 			data = {}
 			covs = [f for f in filenames if f.endswith('.npy')]
 			for c in covs:
 				print c
-				data[c] = ','.join(map(lambda n: str(n), np.load(os.path.join(root, c)).tolist()))
+				data[c] = np.load(os.path.join(root, c))
 			coverage[root] = data
 	return pd.DataFrame(coverage).transpose()
 
