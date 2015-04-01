@@ -58,4 +58,4 @@ def gathernypfiles(dir):
 indir = sys.argv[1]
 out = sys.argv[2]
 df = gathernypfiles(indir)
-df.to_csv(out)
+df.to_pickle(out)
