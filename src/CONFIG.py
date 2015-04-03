@@ -4,8 +4,8 @@ curdir = os.getcwd()+ os.sep
 
 JS = curdir + 'js1.6/src/Linux_All_DBG.OBJ/js -f '
 
-GCOVDIR = curdir + 'js1.6/src/'
-
+GCOVDIR = curdir 
+SRCDIR = curdir + 'js1.6/src/'
 OBJDIR  = curdir + "js1.6/src/Linux_All_DBG.OBJ/"
 
 FILENAMES = ["js", "jsapi","jscpucfg","jsexn","jslog2",	"jsobj","jsscope","jsarena","jsdate","jsfun","jslong",
