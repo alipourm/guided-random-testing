@@ -1071,38 +1071,38 @@ var varBinder = ["var ", "let ", "const ", ""];
 
 var statementMakers = [
   // Late-defined consts can cause problems, so let's late-define them!
-  function(dr) { return cat([makeStatement(dr), " const ", makeId(dr), ";"]); },
+? function(dr) { return cat([makeStatement(dr), " const ", makeId(dr), ";"]); },
 
-  function(dr) { return cat([makeStatement(dr), makeStatement(dr)]); },
-  function(dr) { return cat([makeStatement(dr-1), "\n", makeStatement(dr-1), "\n"]); },
+? function(dr) { return cat([makeStatement(dr), makeStatement(dr)]); },
+? function(dr) { return cat([makeStatement(dr-1), "\n", makeStatement(dr-1), "\n"]); },
 
   // Stripping semilcolons.  What happens if semicolons are missing?  Especially with line breaks used in place of semicolons (semicolon insertion).
-  function(dr) { return cat([stripSemicolon(makeStatement(dr)), "\n", makeStatement(dr)]); },
-  function(dr) { return cat([stripSemicolon(makeStatement(dr)), "\n"                   ]); },
-  function(dr) { return stripSemicolon(makeStatement(dr)); }, // usually invalid, but can be ok e.g. at the end of a block with curly braces
+? function(dr) { return cat([stripSemicolon(makeStatement(dr)), "\n", makeStatement(dr)]); },
+? function(dr) { return cat([stripSemicolon(makeStatement(dr)), "\n"                   ]); },
+? function(dr) { return stripSemicolon(makeStatement(dr)); }, // usually invalid, but can be ok e.g. at the end of a block with curly braces
 
   // Blocks and loops
-  function(dr) { return cat(["{", makeStatement(dr), " }"]); },
-  function(dr) { return cat(["{", makeStatement(dr-1), makeStatement(dr-1), " }"]); },
+? function(dr) { return cat(["{", makeStatement(dr), " }"]); },
+? function(dr) { return cat(["{", makeStatement(dr-1), makeStatement(dr-1), " }"]); },
 
-  function(dr) { return cat([maybeLabel(), "with", "(", makeExpr(dr), ")", makeStatementOrBlock(dr)]); }, 
-  function(dr) { return cat([maybeLabel(), "with", "(", "{", makeId(dr), ": ", makeExpr(dr), "}", ")", makeStatementOrBlock(dr)]); }, 
+? function(dr) { return cat([maybeLabel(), "with", "(", makeExpr(dr), ")", makeStatementOrBlock(dr)]); }, 
+? function(dr) { return cat([maybeLabel(), "with", "(", "{", makeId(dr), ": ", makeExpr(dr), "}", ")", makeStatementOrBlock(dr)]); }, 
 
   // C-style "for" loops
   // Two kinds of "for" loops: one with an expression as the first part, one with a var or let binding 'statement' as the first part.
   // I'm not sure if arbitrary statements are allowed there; I think not.
-  function(dr) { return "/*infloop*/" + cat([maybeLabel(), "for", "(", makeExpr(dr), "; ", makeExpr(dr), "; ", makeExpr(dr), ") ", makeStatementOrBlock(dr)]); }, 
-  function(dr) { return "/*infloop*/" + cat([maybeLabel(), "for", "(", rndElt(varBinder), makeId(dr),                                       "; ", makeExpr(dr), "; ", makeExpr(dr), ") ", makeStatementOrBlock(dr)]); }, 
-  function(dr) { return "/*infloop*/" + cat([maybeLabel(), "for", "(", rndElt(varBinder), makeDestructuringLValue(dr), " = ", makeExpr(dr), "; ", makeExpr(dr), "; ", makeExpr(dr), ") ", makeStatementOrBlock(dr)]); }, 
+? function(dr) { return "/*infloop*/" + cat([maybeLabel(), "for", "(", makeExpr(dr), "; ", makeExpr(dr), "; ", makeExpr(dr), ") ", makeStatementOrBlock(dr)]); }, 
+? function(dr) { return "/*infloop*/" + cat([maybeLabel(), "for", "(", rndElt(varBinder), makeId(dr),                                       "; ", makeExpr(dr), "; ", makeExpr(dr), ") ", makeStatementOrBlock(dr)]); }, 
+? function(dr) { return "/*infloop*/" + cat([maybeLabel(), "for", "(", rndElt(varBinder), makeDestructuringLValue(dr), " = ", makeExpr(dr), "; ", makeExpr(dr), "; ", makeExpr(dr), ") ", makeStatementOrBlock(dr)]); }, 
 
   // "for..in" loops
 
   // -- for (key in obj)
-  function(dr) { return "/*for..in*/" + cat([maybeLabel(), "for", "(", rndElt(varBinder), makeForInLHS(dr), " in ", makeExpr(dr-2), ") ", makeStatementOrBlock(dr)]); },
+? function(dr) { return "/*for..in*/" + cat([maybeLabel(), "for", "(", rndElt(varBinder), makeForInLHS(dr), " in ", makeExpr(dr-2), ") ", makeStatementOrBlock(dr)]); },
   // -- for (key in generator())
-  function(dr) { return "/*for..in*/" + cat([maybeLabel(), "for", "(", rndElt(varBinder), makeForInLHS(dr), " in ", "(", "(", makeFunction(dr), ")", "(", makeExpr(dr), ")", ")", ")", makeStatementOrBlock(dr)]); },
+? function(dr) { return "/*for..in*/" + cat([maybeLabel(), "for", "(", rndElt(varBinder), makeForInLHS(dr), " in ", "(", "(", makeFunction(dr), ")", "(", makeExpr(dr), ")", ")", ")", makeStatementOrBlock(dr)]); },
   // -- for each (value in obj)
-  function(dr) { return "/*for..in*/" + "/* nogeckoex bug 349964 */" + cat([maybeLabel(), " for ", " each", "(", rndElt(varBinder), makeLValue(dr), " in ", makeExpr(dr-2), ") ", makeStatementOrBlock(dr)]); },
+? function(dr) { return "/*for..in*/" + "/* nogeckoex bug 349964 */" + cat([maybeLabel(), " for ", " each", "(", rndElt(varBinder), makeLValue(dr), " in ", makeExpr(dr-2), ") ", makeStatementOrBlock(dr)]); },
   
   // Modify something during a loop -- perhaps the thing being looped over
   // Since we use "let" to bind the for-variables, and only do wacky stuff once, I *think* this is unlikely to hang.
@@ -1111,42 +1111,42 @@ var statementMakers = [
   // Hoisty "for..in" loops.  I don't know why this construct exists, but it does, and it hoists the initial-value expression above the loop.
   // With "var" or "const", the entire thing is hoisted.
   // With "let", only the value is hoisted, and it can be elim'ed as a useless statement.
-  function(dr) { return "/*for..in*/" + cat([maybeLabel(), "for", "(", rndElt(varBinder), makeId(dr), " = ", makeExpr(dr), " in ", makeExpr(dr-2), ") ", makeStatementOrBlock(dr)]); },
-  function(dr) { return "/*for..in*/" + cat([maybeLabel(), "for", "(", rndElt(varBinder), "[", makeId(dr), ", ", makeId(dr), "]", " = ", makeExpr(dr), " in ", makeExpr(dr-2), ") ", makeStatementOrBlock(dr)]); },
+? function(dr) { return "/*for..in*/" + cat([maybeLabel(), "for", "(", rndElt(varBinder), makeId(dr), " = ", makeExpr(dr), " in ", makeExpr(dr-2), ") ", makeStatementOrBlock(dr)]); },
+? function(dr) { return "/*for..in*/" + cat([maybeLabel(), "for", "(", rndElt(varBinder), "[", makeId(dr), ", ", makeId(dr), "]", " = ", makeExpr(dr), " in ", makeExpr(dr-2), ") ", makeStatementOrBlock(dr)]); },
 
-  function(dr) { return cat([maybeLabel(), "while((", makeExpr(dr), ") && 0)" /*don't split this, it's needed to avoid marking as infloop*/, makeStatementOrBlock(dr)]); },
-  function(dr) { return "/*infloop*/" + cat([maybeLabel(), "while", "(", makeExpr(dr), ")", makeStatementOrBlock(dr)]); },
-  function(dr) { return cat([maybeLabel(), "do ", makeStatementOrBlock(dr), " while((", makeExpr(dr), ") && 0)" /*don't split this, it's needed to avoid marking as infloop*/, ";"]); },
-  function(dr) { return "/*infloop*/" + cat([maybeLabel(), "do ", makeStatementOrBlock(dr), " while", "(", makeExpr(dr), ");"]); },
+? function(dr) { return cat([maybeLabel(), "while((", makeExpr(dr), ") && 0)" /*don't split this, it's needed to avoid marking as infloop*/, makeStatementOrBlock(dr)]); },
+? function(dr) { return "/*infloop*/" + cat([maybeLabel(), "while", "(", makeExpr(dr), ")", makeStatementOrBlock(dr)]); },
+? function(dr) { return cat([maybeLabel(), "do ", makeStatementOrBlock(dr), " while((", makeExpr(dr), ") && 0)" /*don't split this, it's needed to avoid marking as infloop*/, ";"]); },
+? function(dr) { return "/*infloop*/" + cat([maybeLabel(), "do ", makeStatementOrBlock(dr), " while", "(", makeExpr(dr), ");"]); },
 
   // Switch statement
-  function(dr) { return cat([maybeLabel(), "switch", "(", makeExpr(dr), ")", " { ", makeSwitchBody(dr), " }"]); },
+? function(dr) { return cat([maybeLabel(), "switch", "(", makeExpr(dr), ")", " { ", makeSwitchBody(dr), " }"]); },
   
   // Let blocks, with and without multiple bindings, with and without initial values
-  function(dr) { return cat(["let ", "(", makeLetHead(dr), ")", " { ", makeStatement(dr), " }"]); },
+? function(dr) { return cat(["let ", "(", makeLetHead(dr), ")", " { ", makeStatement(dr), " }"]); },
 
   // Conditionals, perhaps with 'else if' / 'else'
-  function(dr) { return cat([maybeLabel(), "if(", makeExpr(dr), ") ", makeStatementOrBlock(dr)]); },
-  function(dr) { return cat([maybeLabel(), "if(", makeExpr(dr), ") ", makeStatementOrBlock(dr-1), " else ", makeStatementOrBlock(dr-1)]); },
-  function(dr) { return cat([maybeLabel(), "if(", makeExpr(dr), ") ", makeStatementOrBlock(dr-1), " else ", " if ", "(", makeExpr(dr), ") ", makeStatementOrBlock(dr-1)]); },
-  function(dr) { return cat([maybeLabel(), "if(", makeExpr(dr), ") ", makeStatementOrBlock(dr-1), " else ", " if ", "(", makeExpr(dr), ") ", makeStatementOrBlock(dr-1), " else ", makeStatementOrBlock(dr-1)]); },
+? function(dr) { return cat([maybeLabel(), "if(", makeExpr(dr), ") ", makeStatementOrBlock(dr)]); },
+? function(dr) { return cat([maybeLabel(), "if(", makeExpr(dr), ") ", makeStatementOrBlock(dr-1), " else ", makeStatementOrBlock(dr-1)]); },
+? function(dr) { return cat([maybeLabel(), "if(", makeExpr(dr), ") ", makeStatementOrBlock(dr-1), " else ", " if ", "(", makeExpr(dr), ") ", makeStatementOrBlock(dr-1)]); },
+? function(dr) { return cat([maybeLabel(), "if(", makeExpr(dr), ") ", makeStatementOrBlock(dr-1), " else ", " if ", "(", makeExpr(dr), ") ", makeStatementOrBlock(dr-1), " else ", makeStatementOrBlock(dr-1)]); },
 
   // A tricky pair of if/else cases.
   // In the SECOND case, braces must be preserved to keep the final "else" associated with the first "if".
-  function(dr) { return cat([maybeLabel(), "if(", makeExpr(dr), ") ", "{", " if ", "(", makeExpr(dr), ") ", makeStatementOrBlock(dr-1), " else ", makeStatementOrBlock(dr-1), "}"]); },
-  function(dr) { return cat([maybeLabel(), "if(", makeExpr(dr), ") ", "{", " if ", "(", makeExpr(dr), ") ", makeStatementOrBlock(dr-1), "}", " else ", makeStatementOrBlock(dr-1)]); },
+? function(dr) { return cat([maybeLabel(), "if(", makeExpr(dr), ") ", "{", " if ", "(", makeExpr(dr), ") ", makeStatementOrBlock(dr-1), " else ", makeStatementOrBlock(dr-1), "}"]); },
+? function(dr) { return cat([maybeLabel(), "if(", makeExpr(dr), ") ", "{", " if ", "(", makeExpr(dr), ") ", makeStatementOrBlock(dr-1), "}", " else ", makeStatementOrBlock(dr-1)]); },
   
   // Exception-related statements :)
-  function(dr) { return makeExceptionyStatement(dr-1); makeExceptionyStatement(dr-1); },
-  function(dr) { return makeExceptionyStatement(dr-1); makeExceptionyStatement(dr-1); },
-  function(dr) { return makeExceptionyStatement(dr); },
-  function(dr) { return makeExceptionyStatement(dr); },
-  function(dr) { return makeExceptionyStatement(dr); },
-  function(dr) { return makeExceptionyStatement(dr); },
-  function(dr) { return makeExceptionyStatement(dr); },
+? function(dr) { return makeExceptionyStatement(dr-1); makeExceptionyStatement(dr-1); },
+//function(dr) { return makeExceptionyStatement(dr-1); makeExceptionyStatement(dr-1); },
+?  function(dr) { return makeExceptionyStatement(dr); },
+//function(dr) { return makeExceptionyStatement(dr); },
+//function(dr) { return makeExceptionyStatement(dr); },
+//function(dr) { return makeExceptionyStatement(dr); },
+//function(dr) { return makeExceptionyStatement(dr); },
 
   // Labels. (JavaScript does not have goto, but it does have break-to-label and continue-to-label).
-  function(dr) { return cat(["L", ": ", makeStatementOrBlock(dr)]); },
+?  function(dr) { return cat(["L", ": ", makeStatementOrBlock(dr)]); },
   
   // Functions which are called?
   // Tends to trigger OOM bugs
@@ -1156,9 +1156,9 @@ var statementMakers = [
 function maybeLabel()
 {
   if (rnd(4) == 1)
-    return cat([rndElt(["L", "M"]), ":"]);
+?    return cat([rndElt(["L", "M"]), ":"]);
   else
-    return "";
+?    return "";
 }
 
 
@@ -1178,13 +1178,13 @@ function makeSwitchBody(depth)
       // Want a case/default (or, if this is the beginning, "need").
       
       if (!haveDefault && rnd(2)) {
-        output += "default: ";
+?        output += "default: ";
         haveDefault = true;
       }
       else {
         // cases with numbers (integers?) have special optimizations that affect order when decompiling,
         // so be sure to test those well in addition to testing complicated expressions.
-        output += "case " + (rnd(2) ? rnd(10) : makeExpr(depth)) + ": ";
+?        output += "case " + (rnd(2) ? rnd(10) : makeExpr(depth)) + ": ";
       }
 
       haveSomething = true;
@@ -1192,14 +1192,14 @@ function makeSwitchBody(depth)
     
     // Might want a statement.
     if (rnd(2))
-      output += makeStatement(depth)
+?      output += makeStatement(depth)
 
     // Might want to break, or might want to fall through.
     if (rnd(2))
-      output += "break; ";
+?      output += "break; ";
     
     if (rnd(2))
-      --depth;
+?      --depth;
 
   } while (depth && rnd(5));
   
@@ -1221,43 +1221,43 @@ function makeLittleStatement(depth)
 var littleStatementMakers = 
 [
   // Tiny
-  function(dr) { return cat([";"]); }, // e.g. empty "if" block
-  function(dr) { return cat(["{", "}"]); ; }, // e.g. empty "if" block
-  function(dr) { return cat([""]); },
+?  function(dr) { return cat([";"]); }, // e.g. empty "if" block
+?  function(dr) { return cat(["{", "}"]); ; }, // e.g. empty "if" block
+?  function(dr) { return cat([""]); },
 
   // Force garbage collection
-  function(dr) { return "gc()"; },
+?  function(dr) { return "gc()"; },
   
   // Throw stuff.
-  function(dr) { return cat(["throw ", makeExpr(dr), ";"]); },
+?  function(dr) { return cat(["throw ", makeExpr(dr), ";"]); },
 
   // Break/continue [to label].
-  function(dr) { return cat([rndElt(["continue", "break"]), " ", rndElt(["L", "M", "", ""]), ";"]); },
+?  function(dr) { return cat([rndElt(["continue", "break"]), " ", rndElt(["L", "M", "", ""]), ";"]); },
 
   // Import and export.  (I have not idea what these actually do.)
-  function(dr) { return cat(["export ", makeId(dr), ";"]); },
-  function(dr) { return cat(["export ", "*", ";"]); },
+?  function(dr) { return cat(["export ", makeId(dr), ";"]); },
+?  function(dr) { return cat(["export ", "*", ";"]); },
 // ADG  function(dr) { return cat(["import ", makeId(dr), ".", makeId(dr), ";"]); },
 // ADG  function(dr) { return cat(["import ", makeId(dr), ".", "*", ";"]); },
   
   // Named and unnamed functions (which have different behaviors in different places: both can be expressions,
   // but unnamed functions "want" to be expressions and named functions "want" to be special statements)
-  function(dr) { return makeFunction(dr); },
+?  function(dr) { return makeFunction(dr); },
   
   // Return, yield
-  function(dr) { return cat(["return ", makeExpr(dr), ";"]); },
-  function(dr) { return "return;"; }, // return without a value is allowed in generators; return with a value is not.
-  function(dr) { return cat(["yield ", makeExpr(dr), ";"]); }, // note: yield can also be a left-unary operator, or something like that
-  function(dr) { return "yield;"; },
+?  function(dr) { return cat(["return ", makeExpr(dr), ";"]); },
+?  function(dr) { return "return;"; }, // return without a value is allowed in generators; return with a value is not.
+?  function(dr) { return cat(["yield ", makeExpr(dr), ";"]); }, // note: yield can also be a left-unary operator, or something like that
+?  function(dr) { return "yield;"; },
 
   // Expression statements
-  function(dr) { return cat([makeExpr(dr), ";"]); },
-  function(dr) { return cat(["(", makeExpr(dr), ")", ";"]); },
+?  function(dr) { return cat([makeExpr(dr), ";"]); },
+?  function(dr) { return cat(["(", makeExpr(dr), ")", ";"]); },
   
   // Various kinds of variable declarations, with and without initial values (assignment).
-  function(dr) { return cat([rndElt(varBinder), makeLetHead(dr), ";"]); }, // e.g. "const [a,b] = [3,4];"
-  function(dr) { return cat([rndElt(varBinder), makeLetHead(dr), ";"]); }, // e.g. "const [a,b] = [3,4];"
-  function(dr) { return cat([rndElt(varBinder), makeLetHead(dr), ";"]); }, // e.g. "const [a,b] = [3,4];"
+?  function(dr) { return cat([rndElt(varBinder), makeLetHead(dr), ";"]); }, // e.g. "const [a,b] = [3,4];"
+//R  function(dr) { return cat([rndElt(varBinder), makeLetHead(dr), ";"]); }, // e.g. "const [a,b] = [3,4];"
+//R  function(dr) { return cat([rndElt(varBinder), makeLetHead(dr), ";"]); }, // e.g. "const [a,b] = [3,4];"
 ];
 
 
@@ -1271,10 +1271,10 @@ function makeStatementOrBlock(depth)
   return (rndElt(statementBlockMakers))(dr)
 } 
 var statementBlockMakers = [
-  function(dr) { return makeStatement(dr); },
-  function(dr) { return makeStatement(dr); },
-  function(dr) { return cat(["{", makeStatement(dr), " }"]); },
-  function(dr) { return cat(["{", makeStatement(dr-1), makeStatement(dr-1), " }"]); },
+?  function(dr) { return makeStatement(dr); },
+//R  function(dr) { return makeStatement(dr); },
+?  function(dr) { return cat(["{", makeStatement(dr), " }"]); },
+?  function(dr) { return cat(["{", makeStatement(dr-1), makeStatement(dr-1), " }"]); },
 ]
 
 
@@ -1286,37 +1286,37 @@ function makeExceptionyStatement(depth)
 
   var dr = depth - 1;
   if (dr < 1)
-    return makeLittleStatement(dr);
+?    return makeLittleStatement(dr);
     
-  return (rndElt(exceptionyStatementMakers))(dr);
+? return (rndElt(exceptionyStatementMakers))(dr);
 }
 
 var exceptionyStatementMakers = [
-  function(dr) { return makeTryBlock(dr); },
+? function(dr) { return makeTryBlock(dr); },
 
-  function(dr) { return makeStatement(dr); },
-  function(dr) { return makeLittleStatement(dr); },
+? function(dr) { return makeStatement(dr); },
+? function(dr) { return makeLittleStatement(dr); },
 
-  function(dr) { return "return;" }, // return without a value can be mixed with yield
-  function(dr) { return cat(["return ", makeExpr(dr), ";"]); },
-  function(dr) { return cat(["yield ", makeExpr(dr), ";"]); },
-  function(dr) { return cat(["throw ", makeId(dr), ";"]); },
-  function(dr) { return "throw StopIteration;"; },
-  function(dr) { return "this.zzz.zzz;"; }, // throws; also tests js_DecompileValueGenerator in various locations
-  function(dr) { return cat([makeId(dr), " = ", makeId(dr), ";"]); },
-  function(dr) { return cat([makeLValue(dr), " = ", makeId(dr), ";"]); },
+? function(dr) { return "return;" }, // return without a value can be mixed with yield
+? function(dr) { return cat(["return ", makeExpr(dr), ";"]); },
+? function(dr) { return cat(["yield ", makeExpr(dr), ";"]); },
+? function(dr) { return cat(["throw ", makeId(dr), ";"]); },
+? function(dr) { return "throw StopIteration;"; },
+? function(dr) { return "this.zzz.zzz;"; }, // throws; also tests js_DecompileValueGenerator in various locations
+? function(dr) { return cat([makeId(dr), " = ", makeId(dr), ";"]); },
+? function(dr) { return cat([makeLValue(dr), " = ", makeId(dr), ";"]); },
 
   // Iteration uses StopIteration internally.
   // Iteration is also useful to test because it asserts that there is no pending exception.
-  function(dr) { return "for(let y in []);"; }, 
-  function(dr) { return "for(let y in [5,6,7,8]) " + makeExceptionyStatement(dr); }, 
+? function(dr) { return "for(let y in []);"; }, 
+? function(dr) { return "for(let y in [5,6,7,8]) " + makeExceptionyStatement(dr); }, 
   
   // Brendan says these are scary places to throw: with, let block, lambda called immediately in let expr.
   // And I think he was right.
-  function(dr) { return "with({}) "   + makeExceptionyStatement(dr);         },
-  function(dr) { return "with({}) { " + makeExceptionyStatement(dr) + " } "; },
-  function(dr) { return "let(" + makeLetHead(dr) + ") { " + makeExceptionyStatement(dr); + "}"},
-  function(dr) { return "let(" + makeLetHead(dr) + ") ((function(){" + makeExceptionyStatement(dr) + "})());" },
+? function(dr) { return "with({}) "   + makeExceptionyStatement(dr);         },
+? function(dr) { return "with({}) { " + makeExceptionyStatement(dr) + " } "; },
+? function(dr) { return "let(" + makeLetHead(dr) + ") { " + makeExceptionyStatement(dr); + "}"},
+? function(dr) { return "let(" + makeLetHead(dr) + ") ((function(){" + makeExceptionyStatement(dr) + "})());" },
 
   // Commented out due to causing too much noise on stderr and causing a nonzero exit code :/
 /*
@@ -1352,20 +1352,20 @@ function makeTryBlock(depth)
     // Add a guarded catch, using an expression or a function call.
     ++numCatches;
     if (rnd(2))
-      s += cat(["catch", "(", makeId(dr), " if ",                 makeExpr(dr),                    ")", " { ", makeExceptionyStatement(dr), " } "]);
+?     s += cat(["catch", "(", makeId(dr), " if ",                 makeExpr(dr),                    ")", " { ", makeExceptionyStatement(dr), " } "]);
     else
-      s += cat(["catch", "(", makeId(dr), " if ", "(function(){", makeExceptionyStatement(dr), "})())", " { ", makeExceptionyStatement(dr), " } "]);
+?     s += cat(["catch", "(", makeId(dr), " if ", "(function(){", makeExceptionyStatement(dr), "})())", " { ", makeExceptionyStatement(dr), " } "]);
   }
   
   if (rnd(2)) {
     // Add an unguarded catch.
     ++numCatches;
-    s +=   cat(["catch", "(", makeId(dr),                                                          ")", " { ", makeExceptionyStatement(dr), " } "]);
+?   s +=   cat(["catch", "(", makeId(dr),                                                          ")", " { ", makeExceptionyStatement(dr), " } "]);
   }
   
   if (numCatches == 0 || rnd(2) == 1) {
     // Add a finally.
-    s += cat(["finally", " { ", makeExceptionyStatement(dr), " } "]);
+?   s += cat(["finally", " { ", makeExceptionyStatement(dr), " } "]);
   }
   
   return s;
@@ -1393,232 +1393,231 @@ function makeExpr(depth)
 
 var binaryOps = [
   // Long-standing JavaScript operators, roughly in order from http://www.codehouse.com/javascript/precedence/
-  " * ", " / ", " % ", " + ", " - ", " << ", " >> ", " >>> ", " < ", " > ", " <= ", " >= ", " instanceof ", " in ", " == ", " != ", " === ", " !== ",
-  " & ", " | ", " ^ ", " && ", " || ", " = ", " *= ", " /= ", " %= ", " += ", " -= ", " <<= ", " >>= ", " >>>=", " &= ", " ^= ", " |= ", " , ",
+?OPS " * ", " / ", " % ", " + ", " - ", " << ", " >> ", " >>> ", " < ", " > ", " <= ", " >= ", " instanceof ", " in ", " == ", " != ", " === ", " !== ",
+?OPS  " & ", " | ", " ^ ", " && ", " || ", " = ", " *= ", " /= ", " %= ", " += ", " -= ", " <<= ", " >>= ", " >>>=", " &= ", " ^= ", " |= ", " , ",
 
   // . is special, so test it as a group of right-unary ops, a special exprMaker for property access, and a special exprMaker for the xml filtering predicate operator
   // " . ", 
   
   // Added by E4X
-  " :: ", " .. ", " @ ",
+?OPS  " :: ", " .. ", " @ ",
   // Frequent combinations of E4X things (and "*" namespace, which isn't produced by this fuzzer otherwise)
-  " .@ ", " .@*:: ", " .@x:: ",
+?OPS  " .@ ", " .@*:: ", " .@x:: ",
 ];
 
 var leftUnaryOps = [
-  "--", "++", 
-  "!", "+", "-", "~",
-  "void ", "typeof ", "delete ", 
-  "new ", // but note that "new" can also be a very strange left-binary operator
-  "yield " // see http://www.python.org/dev/peps/pep-0342/ .  Often needs to be parenthesized, so there's also a special exprMaker for it.
+?OPS  "--", "++", 
+?OPS  "!", "+", "-", "~",
+?OPS  "void ", "typeof ", "delete ", 
+?OPS  "new ", // but note that "new" can also be a very strange left-binary operator
+?OPS  "yield " // see http://www.python.org/dev/peps/pep-0342/ .  Often needs to be parenthesized, so there's also a special exprMaker for it.
 ];
 
 var rightUnaryOps = [
   "++", "--",
   // E4X
-  ".*", ".@foo", ".@*"
+?OPS  ".*", ".@foo", ".@*"
 ];
 
 
 var specialProperties = [
-  "prop", 
-  "__iterator__", "__count__", 
-  "__noSuchMethod__",
-  "__parent__", "__proto__", "constructor", "prototype"
+?OPS  "prop", 
+?OPS  "__iterator__", "__count__", 
+?OPS  "__noSuchMethod__",
+?OPS"__parent__", "__proto__", "constructor", "prototype"
 ]
     
 
 var exprMakers =
 [
   // Left-unary operators
-  function(dr) { return cat([rndElt(leftUnaryOps), makeExpr(dr)]); },
-  function(dr) { return cat([rndElt(leftUnaryOps), makeExpr(dr)]); },
-  function(dr) { return cat([rndElt(leftUnaryOps), makeExpr(dr)]); },
+?  function(dr) { return cat([rndElt(leftUnaryOps), makeExpr(dr)]); },
+?  function(dr) { return cat([rndElt(leftUnaryOps), makeExpr(dr)]); },
+?  function(dr) { return cat([rndElt(leftUnaryOps), makeExpr(dr)]); },
   
   // Right-unary operators
-  function(dr) { return cat([makeExpr(dr), rndElt(rightUnaryOps)]); },
-  function(dr) { return cat([makeExpr(dr), rndElt(rightUnaryOps)]); },
-  function(dr) { return cat([makeExpr(dr), rndElt(rightUnaryOps)]); },
+?  function(dr) { return cat([makeExpr(dr), rndElt(rightUnaryOps)]); },
+?  function(dr) { return cat([makeExpr(dr), rndElt(rightUnaryOps)]); },
+?  function(dr) { return cat([makeExpr(dr), rndElt(rightUnaryOps)]); },
 
   // Special properties: we love to set them!
-  function(dr) { return cat([makeExpr(dr), ".", rndElt(specialProperties)]); },
-  function(dr) { return cat([makeExpr(dr), ".", rndElt(specialProperties), " = ", makeExpr(dr)]); },
-  function(dr) { return cat([makeId(dr),   ".", rndElt(specialProperties), " = ", makeExpr(dr)]); },
+?  function(dr) { return cat([makeExpr(dr), ".", rndElt(specialProperties)]); },
+?  function(dr) { return cat([makeExpr(dr), ".", rndElt(specialProperties), " = ", makeExpr(dr)]); },
+//R  function(dr) { return cat([makeId(dr),   ".", rndElt(specialProperties), " = ", makeExpr(dr)]); },
   
   // Binary operators
-  function(dr) { return cat([makeExpr(dr), rndElt(binaryOps), makeExpr(dr)]); },
-  function(dr) { return cat([makeExpr(dr), rndElt(binaryOps), makeExpr(dr)]); },
-  function(dr) { return cat([makeExpr(dr), rndElt(binaryOps), makeExpr(dr)]); },
-  function(dr) { return cat([makeExpr(dr), rndElt(binaryOps), makeExpr(dr)]); },
-  function(dr) { return cat([makeExpr(dr), rndElt(binaryOps), makeExpr(dr)]); },
-  function(dr) { return cat([makeExpr(dr), rndElt(binaryOps), makeExpr(dr)]); },
-  function(dr) { return cat([makeExpr(dr), rndElt(binaryOps), makeExpr(dr)]); },
-  function(dr) { return cat([makeExpr(dr), rndElt(binaryOps), makeExpr(dr)]); },
-  function(dr) { return cat([makeExpr(dr), rndElt(binaryOps), makeExpr(dr)]); },
-  function(dr) { return cat([makeExpr(dr), rndElt(binaryOps), makeExpr(dr)]); },
-  function(dr) { return cat([makeExpr(dr), rndElt(binaryOps), makeExpr(dr)]); },
-  function(dr) { return cat([makeExpr(dr), rndElt(binaryOps), makeExpr(dr)]); },
-  function(dr) { return cat([makeExpr(dr), rndElt(binaryOps), makeExpr(dr)]); },
+?  function(dr) { return cat([makeExpr(dr), rndElt(binaryOps), makeExpr(dr)]); },
+//R  function(dr) { return cat([makeExpr(dr), rndElt(binaryOps), makeExpr(dr)]); },
+//R  function(dr) { return cat([makeExpr(dr), rndElt(binaryOps), makeExpr(dr)]); },
+//R  function(dr) { return cat([makeExpr(dr), rndElt(binaryOps), makeExpr(dr)]); },
+//R  function(dr) { return cat([makeExpr(dr), rndElt(binaryOps), makeExpr(dr)]); },
+//R  function(dr) { return cat([makeExpr(dr), rndElt(binaryOps), makeExpr(dr)]); },
+//R  function(dr) { return cat([makeExpr(dr), rndElt(binaryOps), makeExpr(dr)]); },
+//R  function(dr) { return cat([makeExpr(dr), rndElt(binaryOps), makeExpr(dr)]); },
+//R  function(dr) { return cat([makeExpr(dr), rndElt(binaryOps), makeExpr(dr)]); },
+//R  function(dr) { return cat([makeExpr(dr), rndElt(binaryOps), makeExpr(dr)]); },
+//R  function(dr) { return cat([makeExpr(dr), rndElt(binaryOps), makeExpr(dr)]); },
+//R  function(dr) { return cat([makeExpr(dr), rndElt(binaryOps), makeExpr(dr)]); },
   
   // Ternary operator
-  function(dr) { return cat([makeExpr(dr), " ? ", makeExpr(dr), " : ", makeExpr(dr)]); },
-  function(dr) { return cat([makeExpr(dr), " ? ", makeExpr(dr), " : ", makeExpr(dr)]); },
+?  function(dr) { return cat([makeExpr(dr), " ? ", makeExpr(dr), " : ", makeExpr(dr)]); },
+//R  function(dr) { return cat([makeExpr(dr), " ? ", makeExpr(dr), " : ", makeExpr(dr)]); },
 
   // In most contexts, yield expressions must be parenthesized, so including explicitly parenthesized yields makes actually-compiling yields appear more often.
-  function(dr) { return cat(["yield ", makeExpr(dr)]); },
-  function(dr) { return cat(["(", "yield ", makeExpr(dr), ")"]); },
+?  function(dr) { return cat(["yield ", makeExpr(dr)]); },
+?  function(dr) { return cat(["(", "yield ", makeExpr(dr), ")"]); },
   
   // Array functions (including extras).  The most interesting are map and filter, I think.
   // These are mostly interesting to fuzzers in the sense of "what happens if i do strange things from a filter function?"  e.g. modify the array.. :)
   // This fuzzer isn't the best for attacking this kind of thing, since it's unlikely that the code in the function will attempt to modify the array or make it go away.
   // The second parameter to "map" is used as the "this" for the function.
-  function(dr) { return cat(["[11,12,13,14]",        ".", rndElt(["map", "filter", "some", "sort"]) ]); },
-  function(dr) { return cat(["[15,16,17,18]",        ".", rndElt(["map", "filter", "some", "sort"]), "(", makeFunction(dr), ", ", makeExpr(dr), ")"]); },
-  function(dr) { return cat(["[", makeExpr(dr), "]", ".", rndElt(["map", "filter", "some", "sort"]), "(", makeFunction(dr), ")"]); },
+?  function(dr) { return cat(["[11,12,13,14]",        ".", rndElt(["map", "filter", "some", "sort"]) ]); },
+?  function(dr) { return cat(["[15,16,17,18]",        ".", rndElt(["map", "filter", "some", "sort"]), "(", makeFunction(dr), ", ", makeExpr(dr), ")"]); },
+?  function(dr) { return cat(["[", makeExpr(dr), "]", ".", rndElt(["map", "filter", "some", "sort"]), "(", makeFunction(dr), ")"]); },
   
   // RegExp replace.  This is interesting for same same reason as array extras.
-  function(dr) { return cat(["'fafafa'", ".", "replace", "(", "/", "a", "/", "g", ", ", makeFunction(dr), ")"]); },
+?  function(dr) { return cat(["'fafafa'", ".", "replace", "(", "/", "a", "/", "g", ", ", makeFunction(dr), ")"]); },
 
   // XML filtering predicate operator!  It isn't lexed specially; there can be a space between the dot and the lparen.
-  function(dr) { return cat([makeId(dr),  ".", "(", makeExpr(dr), ")"]); },
-  function(dr) { return cat([makeE4X(dr),  ".", "(", makeExpr(dr), ")"]); },
+?  function(dr) { return cat([makeId(dr),  ".", "(", makeExpr(dr), ")"]); },
+?  function(dr) { return cat([makeE4X(dr), ".", "(", makeExpr(dr), ")"]); },
 
   // Dot (property access)
-  function(dr) { return cat([makeId(dr),    ".", makeId(dr)]); },
-  function(dr) { return cat([makeExpr(dr),  ".", makeId(dr)]); },
+?  function(dr) { return cat([makeId(dr),    ".", makeId(dr)]); },
+?  function(dr) { return cat([makeExpr(dr),  ".", makeId(dr)]); },
 
   // Index into array
-  function(dr) { return cat([     makeExpr(dr),      "[", makeExpr(dr), "]"]); },
-  function(dr) { return cat(["(", makeExpr(dr), ")", "[", makeExpr(dr), "]"]); },
+?  function(dr) { return cat([     makeExpr(dr),      "[", makeExpr(dr), "]"]); },
+?  function(dr) { return cat(["(", makeExpr(dr), ")", "[", makeExpr(dr), "]"]); },
 
   // Containment in an array or object (or, if this happens to end up on the LHS of an assignment, destructuring)
-  function(dr) { return cat([maybeSharpDecl(), "[", makeExpr(dr), "]"]); },
-  function(dr) { return cat([maybeSharpDecl(), "(", "{", makeId(dr), ": ", makeExpr(dr), "}", ")"]); },
+?  function(dr) { return cat([maybeSharpDecl(), "[", makeExpr(dr), "]"]); },
+?  function(dr) { return cat([maybeSharpDecl(), "(", "{", makeId(dr), ": ", makeExpr(dr), "}", ")"]); },
 
   // Sharps on random stuff?
-  function(dr) { return cat([maybeSharpDecl(), makeExpr(dr)]); },
+?  function(dr) { return cat([maybeSharpDecl(), makeExpr(dr)]); },
 
   // Functions: called immediately/not
-  function(dr) { return makeFunction(dr); },
-  function(dr) { return cat(["(", makeFunction(dr), ")", "(", makeActualArgList(dr), ")"]); },
+?  function(dr) { return makeFunction(dr); },
+?  function(dr) { return cat(["(", makeFunction(dr), ")", "(", makeActualArgList(dr), ")"]); },
 
   // Try to call things that may or may not be functions.
-  function(dr) { return cat([     makeExpr(dr),          "(", makeActualArgList(dr), ")"]); },
-  function(dr) { return cat(["(", makeExpr(dr),     ")", "(", makeActualArgList(dr), ")"]); },
-  function(dr) { return cat([     makeFunction(dr),      "(", makeActualArgList(dr), ")"]); },
+?  function(dr) { return cat([     makeExpr(dr),          "(", makeActualArgList(dr), ")"]); },
+?  function(dr) { return cat(["(", makeExpr(dr),     ")", "(", makeActualArgList(dr), ")"]); },
+?  function(dr) { return cat([     makeFunction(dr),      "(", makeActualArgList(dr), ")"]); },
 
   // Try to test function.call heavily.
-  function(dr) { return cat(["(", makeFunction(dr), ")", ".", "call", "(", makeExpr(dr), ", ", makeActualArgList(dr), ")"]); },
+?  function(dr) { return cat(["(", makeFunction(dr), ")", ".", "call", "(", makeExpr(dr), ", ", makeActualArgList(dr), ")"]); },
   
   // Binary "new", with and without clarifying parentheses, with expressions or functions
-  function(dr) { return cat(["new ",      makeExpr(dr),          "(", makeActualArgList(dr), ")"]); },
-  function(dr) { return cat(["new ", "(", makeExpr(dr), ")",     "(", makeActualArgList(dr), ")"]); },
+?  function(dr) { return cat(["new ",      makeExpr(dr),          "(", makeActualArgList(dr), ")"]); },
+?  function(dr) { return cat(["new ", "(", makeExpr(dr), ")",     "(", makeActualArgList(dr), ")"]); },
 
-  function(dr) { return cat(["new ",      makeFunction(dr),      "(", makeActualArgList(dr), ")"]); },
-  function(dr) { return cat(["new ", "(", makeFunction(dr), ")", "(", makeActualArgList(dr), ")"]); },
+?  function(dr) { return cat(["new ",      makeFunction(dr),      "(", makeActualArgList(dr), ")"]); },
+?  function(dr) { return cat(["new ", "(", makeFunction(dr), ")", "(", makeActualArgList(dr), ")"]); },
 
   // Sometimes we do crazy stuff, like putting a statement where an expression should go.  This frequently causes a syntax error.
-  function(dr) { return stripSemicolon(makeLittleStatement(dr)); },
+?  function(dr) { return stripSemicolon(makeLittleStatement(dr)); },
   function(dr) { return ""; },
 
   // Let expressions -- note the lack of curly braces.
-  function(dr) { return cat(["let ", "(", makeLetHead(dr), ") ", makeExpr(dr)]); },
+?  function(dr) { return cat(["let ", "(", makeLetHead(dr), ") ", makeExpr(dr)]); },
 
   // Array comprehensions (JavaScript 1.7)
-  function(dr) { return cat(["[", makeExpr(dr), makeComprehension(dr), "]"]); },
+?  function(dr) { return cat(["[", makeExpr(dr), makeComprehension(dr), "]"]); },
 
   // Generator expressions (JavaScript 1.8)
-  function(dr) { return cat([     makeExpr(dr), makeComprehension(dr)     ]); },
-  function(dr) { return cat(["(", makeExpr(dr), makeComprehension(dr), ")"]); },
+?  function(dr) { return cat([     makeExpr(dr), makeComprehension(dr)     ]); },
+?  function(dr) { return cat(["(", makeExpr(dr), makeComprehension(dr), ")"]); },
   
 
-  function(dr) { return cat([" /* Comment */", makeExpr(dr)]); },
-  function(dr) { return cat(["\n", makeExpr(dr)]); }, // perhaps trigger semicolon insertion and stuff
-  function(dr) { return cat([makeExpr(dr), "\n"]); },
+?  function(dr) { return cat([" /* Comment */", makeExpr(dr)]); },
+?  function(dr) { return cat(["\n", makeExpr(dr)]); }, // perhaps trigger semicolon insertion and stuff
+?  function(dr) { return cat([makeExpr(dr), "\n"]); },
 
-  function(dr) { return cat([makeLValue(dr)]); },
+?  function(dr) { return cat([makeLValue(dr)]); },
 
   // Assignment (can be destructuring)
-  function(dr) { return cat([makeLValue(dr), " = ", makeExpr(dr)]); },
-  function(dr) { return cat([makeLValue(dr), " = ", makeExpr(dr)]); },
-  function(dr) { return cat([makeLValue(dr), " = ", makeExpr(dr)]); },
-  function(dr) { return cat([makeLValue(dr), " = ", makeExpr(dr)]); },
+?  function(dr) { return cat([makeLValue(dr), " = ", makeExpr(dr)]); },
+//R  function(dr) { return cat([makeLValue(dr), " = ", makeExpr(dr)]); },
+//R  function(dr) { return cat([makeLValue(dr), " = ", makeExpr(dr)]); },
+//R  function(dr) { return cat([makeLValue(dr), " = ", makeExpr(dr)]); },
 
   // Destructuring assignment
-  function(dr) { return cat([makeDestructuringLValue(dr), " = ", makeExpr(dr)]); },
-  function(dr) { return cat([makeDestructuringLValue(dr), " = ", makeExpr(dr)]); },
-  function(dr) { return cat([makeDestructuringLValue(dr), " = ", makeExpr(dr)]); },
-  function(dr) { return cat([makeDestructuringLValue(dr), " = ", makeExpr(dr)]); },
+?  function(dr) { return cat([makeDestructuringLValue(dr), " = ", makeExpr(dr)]); },
+//R  function(dr) { return cat([makeDestructuringLValue(dr), " = ", makeExpr(dr)]); },
+//R  function(dr) { return cat([makeDestructuringLValue(dr), " = ", makeExpr(dr)]); },
+//R  function(dr) { return cat([makeDestructuringLValue(dr), " = ", makeExpr(dr)]); },
   
   // Destructuring assignment with lots of group assignment
-  function(dr) { return cat([makeDestructuringLValue(dr), " = ", makeDestructuringLValue(dr)]); },
+?  function(dr) { return cat([makeDestructuringLValue(dr), " = ", makeDestructuringLValue(dr)]); },
   
   // Modifying assignment, with operators that do various coercions
-  function(dr) { return cat([makeLValue(dr), rndElt(["|=", "%=", "+=", "-="]), makeExpr(dr)]); },
+?  function(dr) { return cat([makeLValue(dr), rndElt(["|=", "%=", "+=", "-="]), makeExpr(dr)]); },
 
   // Watchpoints (similar to setters)
-  function(dr) { return cat([makeExpr(dr), ".", "watch", "(", uneval(makeId(dr)), ", ", makeFunction(dr), ")"]); },
-  function(dr) { return cat([makeExpr(dr), ".", "unwatch", "(", uneval(makeId(dr)), ")"]); },
+?  function(dr) { return cat([makeExpr(dr), ".", "watch", "(", uneval(makeId(dr)), ", ", makeFunction(dr), ")"]); },
+?  function(dr) { return cat([makeExpr(dr), ".", "unwatch", "(", uneval(makeId(dr)), ")"]); },
   
   // New-style getter/setter, imperative
-  function(dr) { return cat([makeExpr(dr), ".", "__defineGetter__", "(", uneval(makeId(dr)), ", ", makeFunction(dr), ")"]); },
-  function(dr) { return cat([makeExpr(dr), ".", "__defineSetter__", "(", uneval(makeId(dr)), ", ", makeFunction(dr), ")"]); },
-  function(dr) { return cat(["this", ".", "__defineGetter__", "(", uneval(makeId(dr)), ", ", makeFunction(dr), ")"]); },
-  function(dr) { return cat(["this", ".", "__defineSetter__", "(", uneval(makeId(dr)), ", ", makeFunction(dr), ")"]); },
+?  function(dr) { return cat([makeExpr(dr), ".", "__defineGetter__", "(", uneval(makeId(dr)), ", ", makeFunction(dr), ")"]); },
+?  function(dr) { return cat([makeExpr(dr), ".", "__defineSetter__", "(", uneval(makeId(dr)), ", ", makeFunction(dr), ")"]); },
+?  function(dr) { return cat(["this", ".", "__defineGetter__", "(", uneval(makeId(dr)), ", ", makeFunction(dr), ")"]); },
+?  function(dr) { return cat(["this", ".", "__defineSetter__", "(", uneval(makeId(dr)), ", ", makeFunction(dr), ")"]); },
   
   // Old-style getter/setter, imperative
-  function(dr) { return cat([makeId(dr), ".", makeId(dr), " ", rndElt(["getter", "setter"]), "= ", makeFunction(dr)]); },
+?  function(dr) { return cat([makeId(dr), ".", makeId(dr), " ", rndElt(["getter", "setter"]), "= ", makeFunction(dr)]); },
 
   // Object literal
-  function(dr) { return cat(["(", "{", makeObjLiteralPart(dr), " }", ")"]); },
-  function(dr) { return cat(["(", "{", makeObjLiteralPart(dr), ", ", makeObjLiteralPart(dr), " }", ")"]); },
+?  function(dr) { return cat(["(", "{", makeObjLiteralPart(dr), " }", ")"]); },
+?  function(dr) { return cat(["(", "{", makeObjLiteralPart(dr), ", ", makeObjLiteralPart(dr), " }", ")"]); },
   
   // Test js_ReportIsNotFunction heavily.
-  function(dr) { return "(p={}, (p.z = " + makeExpr(dr) + ")())"; },
+?  function(dr) { return "(p={}, (p.z = " + makeExpr(dr) + ")())"; },
 
   // Test js_ReportIsNotFunction heavily.
   // Test decompilation for ".keyword" a bit.
   // Test throwing-into-generator sometimes.
-  function(dr) { return cat([makeExpr(dr), ".", "throw", "(", makeExpr(dr), ")"]); },
-  function(dr) { return cat([makeExpr(dr), ".", "yoyo",   "(", makeExpr(dr), ")"]); },
+?  function(dr) { return cat([makeExpr(dr), ".", "throw", "(", makeExpr(dr), ")"]); },
+?  function(dr) { return cat([makeExpr(dr), ".", "yoyo",   "(", makeExpr(dr), ")"]); },
 
   // Throws, but more importantly, tests js_DecompileValueGenerator in various contexts.
-  function(dr) { return "this.zzz.zzz"; }, 
+?  function(dr) { return "this.zzz.zzz"; }, 
   
   // Test eval in various contexts. (but avoid clobbering eval)
   // Test the special "obj.eval" and "eval(..., obj)" forms.
-  function(dr) { return makeExpr(dr) + ".eval(" + makeExpr(dr) + ")"; },
-  function(dr) { return "eval(" + uneval(makeExpr(dr)) + ", " + makeExpr(dr) + ")"; },  
-  function(dr) { return "eval(" + uneval(makeStatement(dr)) + ", " + makeExpr(dr) + ")"; },
+?  function(dr) { return makeExpr(dr) + ".eval(" + makeExpr(dr) + ")"; },
+?  function(dr) { return "eval(" + uneval(makeExpr(dr)) + ", " + makeExpr(dr) + ")"; },  
+?  function(dr) { return "eval(" + uneval(makeStatement(dr)) + ", " + makeExpr(dr) + ")"; },
   
   // Uneval needs more testing than it will get accidentally.  No cat() because I don't want uneval clobbered (assigned to) accidentally.
-  function(dr) { return "(uneval(" + makeExpr(dr) + "))"; },
+?  function(dr) { return "(uneval(" + makeExpr(dr) + "))"; },
 
   // Object.prototype stuff
-  function(dr) { return cat([makeExpr(dr), ".", "hasOwnProperty", "(", uneval(makeId(dr)), ")"]); },
-  function(dr) { return cat([makeExpr(dr), ".", "propertyIsEnumerable", "(", uneval(makeId(dr)), ")"]); },
-  function(dr) { return cat([makeExpr(dr), ".", "isPrototypeOf", "(", makeExpr(dr), ")"]); },
-  function(dr) { return cat([makeExpr(dr), ".", "__lookupGetter__", "(", uneval(makeId(dr)), ")"]); },
-  function(dr) { return cat([makeExpr(dr), ".", "__lookupSetter__", "(", uneval(makeId(dr)), ")"]); },
-  function(dr) { return cat([makeExpr(dr), ".", "valueOf", "(", uneval("number"), ")"]); },
+?  function(dr) { return cat([makeExpr(dr), ".", "hasOwnProperty", "(", uneval(makeId(dr)), ")"]); },
+?  function(dr) { return cat([makeExpr(dr), ".", "propertyIsEnumerable", "(", uneval(makeId(dr)), ")"]); },
+?  function(dr) { return cat([makeExpr(dr), ".", "isPrototypeOf", "(", makeExpr(dr), ")"]); },
+?  function(dr) { return cat([makeExpr(dr), ".", "__lookupGetter__", "(", uneval(makeId(dr)), ")"]); },
+?  function(dr) { return cat([makeExpr(dr), ".", "__lookupSetter__", "(", uneval(makeId(dr)), ")"]); },
+?  function(dr) { return cat([makeExpr(dr), ".", "valueOf", "(", uneval("number"), ")"]); },
   
   // Constructors.  No "T" -- don't screw with the constructors themselves; just call them.
-  function(dr) { return "new " + rndElt(constructors) + "(" + makeActualArgList(dr) + ")"; },
-  function(dr) { return          rndElt(constructors) + "(" + makeActualArgList(dr) + ")"; }
+?  function(dr) { return "new " + rndElt(constructors) + "(" + makeActualArgList(dr) + ")"; },
+?  function(dr) { return          rndElt(constructors) + "(" + makeActualArgList(dr) + ")"; }
 ];
 
 var constructors = [
-  "Error", "RangeError", "Exception",
-  "Function", "Date", "RegExp", "String", "Array", "Object", "Number", "Boolean", 
-  "Iterator"
+?OPS  "Error", "RangeError", "Exception",
+?OPS  "Function", "Date", "RegExp", "String", "Array", "Object", "Number", "Boolean", 
+?OPS  "Iterator"
 ];
 
 function maybeSharpDecl()
 {
   if (rnd(3) == 0)
-    return cat(["#", "" + (rnd(3)), "="]);
+?    return cat(["#", "" + (rnd(3)), "="]);
   else
-    return "";
+?    return "";
 }
 
 
@@ -1629,12 +1628,12 @@ function makeObjLiteralPart(dr)
   switch(rnd(8))
   {
     // Old-style literal getter/setter
-    case 0: return cat([makeId(dr), " getter: ", makeFunction(dr)]);
-    case 1: return cat([makeId(dr), " setter: ", makeFunction(dr)]);
+?    case 0: return cat([makeId(dr), " getter: ", makeFunction(dr)]);
+?    case 1: return cat([makeId(dr), " setter: ", makeFunction(dr)]);
     
     // New-style literal getter/setter
-    case 2: return cat([" get ", makeId(dr), maybeName(dr), "(", makeFormalArgList(dr-1), ")", makeFunctionBody(dr)]);
-    case 3: return cat([" set ", makeId(dr), maybeName(dr), "(", makeFormalArgList(dr-1), ")", makeFunctionBody(dr)]);
+?    case 2: return cat([" get ", makeId(dr), maybeName(dr), "(", makeFormalArgList(dr-1), ")", makeFunctionBody(dr)]);
+?    case 3: return cat([" set ", makeId(dr), maybeName(dr), "(", makeFormalArgList(dr-1), ")", makeFunctionBody(dr)]);
     
 
 
@@ -1646,7 +1645,7 @@ function makeObjLiteralPart(dr)
     case 7: return cat(["valueOf: function() { return " + makeExpr(dr) + "; } }", ")"]); },
 */
 
-    default: return cat([makeId(dr), ": ", makeExpr(dr)]);
+?    default: return cat([makeId(dr), ": ", makeExpr(dr)]);
   }
 }
 
@@ -1660,9 +1659,9 @@ function makeFunction(depth)
   var dr = depth - 1;
   
   if(rnd(5) == 1)
-    return makeExpr(dr);
+?    return makeExpr(dr);
 
-  return (rndElt(functionMakers))(dr);
+?  return (rndElt(functionMakers))(dr);
 }
 
 
@@ -1683,9 +1682,9 @@ function makeFunPrefix(depth)
 function maybeName(depth)
 {
   if (rnd(2) == 0)
-    return " " + makeId(depth) + " ";
+?    return " " + makeId(depth) + " ";
   else
-    return "";
+?    return "";
 }
 
 function makeFunctionBody(depth)
@@ -1693,11 +1692,11 @@ function makeFunctionBody(depth)
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(depth);
 
   switch(rnd(4)) {
-    case 0: return cat([" { ", makeStatement(depth - 1),   " } "]);
-    case 1: return cat([" { ", "return ", makeExpr(depth), " } "]);
-    case 2: return cat([" { ", "yield ",  makeExpr(depth), " } "]);
-    case 3: return makeExpr(depth); // make an "expression closure"
-    default: return makeExpr(depth); // make an "expression closure"
+?    case 0: return cat([" { ", makeStatement(depth - 1),   " } "]);
+?    case 1: return cat([" { ", "return ", makeExpr(depth), " } "]);
+?    case 2: return cat([" { ", "yield ",  makeExpr(depth), " } "]);
+?    case 3: return makeExpr(depth); // make an "expression closure"
+?    default: return makeExpr(depth); // make an "expression closure"
   }
 }
 
@@ -1708,64 +1707,64 @@ var functionMakers = [
   // Note that a function with a name is sometimes considered a statement rather than an expression.
 
   // Functions and expression closures
-  function(dr) { return cat([makeFunPrefix(dr), "function", " ", maybeName(dr), "(", makeFormalArgList(dr), ")", makeFunctionBody(dr)]); },
-  function(dr) { return cat([makeFunPrefix(dr), "function", " ", maybeName(dr), "(", makeFormalArgList(dr), ")", makeFunctionBody(dr)]); },
-  function(dr) { return cat([makeFunPrefix(dr), "function", " ", maybeName(dr), "(", makeFormalArgList(dr), ")", makeFunctionBody(dr)]); },
-  function(dr) { return cat([makeFunPrefix(dr), "function", " ", maybeName(dr), "(", makeFormalArgList(dr), ")", makeFunctionBody(dr)]); },
+?  function(dr) { return cat([makeFunPrefix(dr), "function", " ", maybeName(dr), "(", makeFormalArgList(dr), ")", makeFunctionBody(dr)]); },
+//R  function(dr) { return cat([makeFunPrefix(dr), "function", " ", maybeName(dr), "(", makeFormalArgList(dr), ")", makeFunctionBody(dr)]); },
+//R  function(dr) { return cat([makeFunPrefix(dr), "function", " ", maybeName(dr), "(", makeFormalArgList(dr), ")", makeFunctionBody(dr)]); },
+//R  function(dr) { return cat([makeFunPrefix(dr), "function", " ", maybeName(dr), "(", makeFormalArgList(dr), ")", makeFunctionBody(dr)]); },
   
 
   // The identity function
-  function(dr) { return "function(q) { return q; }" },
+?  function(dr) { return "function(q) { return q; }" },
 
   // A generator that does something
-  function(dr) { return "function(y) { yield y; " + makeStatement(dr) + "; yield y; }" }, 
+?  function(dr) { return "function(y) { yield y; " + makeStatement(dr) + "; yield y; }" }, 
   
   // A generator expression -- kinda a function??
-  function(dr) { return "(1 for (x in []))"; },
+?  function(dr) { return "(1 for (x in []))"; },
   
   // Special functions that might have interesting results, especially when called "directly" by things like string.replace or array.map.
-  function(dr) { return "eval" }, // eval is interesting both for its "no indirect calls" feature and for the way it's implemented -- a special bytecode.
-  function(dr) { return "new Function" }, // this won't be interpreted the same way for each caller of makeFunction, but that's ok
-  function(dr) { return "(new Function(" + uneval(makeStatement(dr)) + "))"; },
-  function(dr) { return "Function" }, // without "new"!  it does seem to work...
-  function(dr) { return "gc" },
-  function(dr) { return "Math.sin" },
-  function(dr) { return "Math.pow" },
-  function(dr) { return "/a/gi" }, // in Firefox, at least, regular expressions can be used as functions: e.g. "hahaa".replace(/a+/g, /aa/g) is "hnullhaa"!
-  function(dr) { return "[1,2,3,4].map" },
-  function(dr) { return "[1,2,3,4].slice" },
-  function(dr) { return "'haha'.split" },
-  function(dr) { return "({}).hasOwnProperty" },
-  function(dr) { return "({}).__lookupGetter__" },
-  function(dr) { return cat(["(", makeFunction(dr), ")", ".", "call"]); },
-  function(dr) { return cat(["(", makeFunction(dr), ")", ".", "apply"]); },
-  function(dr) { return cat(["(", makeExpr(dr), ")", ".", "watch"]); },
-  function(dr) { return cat(["(", makeExpr(dr), ")", ".", "__defineSetter__"]); },
+?  function(dr) { return "eval" }, // eval is interesting both for its "no indirect calls" feature and for the way it's implemented -- a special bytecode.
+?  function(dr) { return "new Function" }, // this won't be interpreted the same way for each caller of makeFunction, but that's ok
+?  function(dr) { return "(new Function(" + uneval(makeStatement(dr)) + "))"; },
+?  function(dr) { return "Function" }, // without "new"!  it does seem to work...
+?  function(dr) { return "gc" },
+?  function(dr) { return "Math.sin" },
+?  function(dr) { return "Math.pow" },
+?  function(dr) { return "/a/gi" }, // in Firefox, at least, regular expressions can be used as functions: e.g. "hahaa".replace(/a+/g, /aa/g) is "hnullhaa"!
+?  function(dr) { return "[1,2,3,4].map" },
+?  function(dr) { return "[1,2,3,4].slice" },
+?  function(dr) { return "'haha'.split" },
+?  function(dr) { return "({}).hasOwnProperty" },
+?  function(dr) { return "({}).__lookupGetter__" },
+?  function(dr) { return cat(["(", makeFunction(dr), ")", ".", "call"]); },
+?  function(dr) { return cat(["(", makeFunction(dr), ")", ".", "apply"]); },
+?  function(dr) { return cat(["(", makeExpr(dr), ")", ".", "watch"]); },
+?  function(dr) { return cat(["(", makeExpr(dr), ")", ".", "__defineSetter__"]); },
 ];
   
 
 
 function makeLetHead(depth)
 {
-  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(depth);
+?? if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(depth);
 
   if (rnd(2) == 1)
-    return makeLetHeadItem(depth);
+?    return makeLetHeadItem(depth);
   else
-    return makeLetHeadItem(depth) + ", " + makeLetHeadItem(depth - 1);
+?    return makeLetHeadItem(depth) + ", " + makeLetHeadItem(depth - 1);
 }
 
 function makeLetHeadItem(depth)
 {
-  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(depth);
+??  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(depth);
 
   var dr = depth - 1;
   
   // 0 or more things being declared
-  var lhs = (rnd(3) == 1) ? makeDestructuringLValue(dr) : makeId(dr);
+??  var lhs = (rnd(3) == 1) ? makeDestructuringLValue(dr) : makeId(dr);
   
   // initial value
-  var rhs = (rnd(2) == 1) ? (" = " + makeExpr(dr)) : "";
+??  var rhs = (rnd(2) == 1) ? (" = " + makeExpr(dr)) : "";
   
   return lhs + rhs;
 }
@@ -1773,12 +1772,12 @@ function makeLetHeadItem(depth)
 
 function makeActualArgList(depth)
 {
-  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(depth);
+??  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(depth);
 
   var nArgs = rnd(3);
 
   if (nArgs == 0)
-    return "";
+?    return "";
 
   var argList = makeExpr(depth);
 
@@ -1795,7 +1794,7 @@ function makeFormalArgList(depth)
   var nArgs = rnd(3);
 
   if (nArgs == 0)
-    return "";
+?    return "";
 
   var argList = makeFormalArg(depth)
 
@@ -1810,7 +1809,7 @@ function makeFormalArg(depth)
   if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(depth);
 
   if (rnd(4) == 1)
-    return makeDestructuringLValue(depth);
+?    return makeDestructuringLValue(depth);
   
   return makeId(depth);
 }
@@ -1824,18 +1823,18 @@ function makeId(depth)
 
   switch(rnd(200))
   {
-  case 0: return makeTerm(dr);
-  case 1: return makeExpr(dr);
-  case 2: case 3: case 4: case 5: return makeLValue(dr);
-  case 6: case 7: return makeDestructuringLValue(dr);
-  case 8: case 9: case 10: return rndElt(["get", "set", "getter", "setter", "delete", "let", "yield", "each"]);
-  case 11: case 12: case 13: return "function::" + makeId(dr);
-  case 14: return "x::" + makeId(dr);
-  case 15: case 16: return rndElt(specialProperties);
-  default: return rndElt(specialProperties);
+?  case 0: return makeTerm(dr);
+?  case 1: return makeExpr(dr);
+?  case 2: case 3: case 4: case 5: return makeLValue(dr);
+?  case 6: case 7: return makeDestructuringLValue(dr);
+?  case 8: case 9: case 10: return rndElt(["get", "set", "getter", "setter", "delete", "let", "yield", "each"]);
+?  case 11: case 12: case 13: return "function::" + makeId(dr);
+?  case 14: return "x::" + makeId(dr);
+?  case 15: case 16: return rndElt(specialProperties);
+?  default: return rndElt(specialProperties);
   }
 
-  return rndElt(["x", "x", "x", "x", "x", "x", "x", "x", // repeat "x" so it's likely to be bound more than once, causing "already bound" errors, elimination of assign-to-const, or conflicts
+?  return rndElt(["x", "x", "x", "x", "x", "x", "x", "x", // repeat "x" so it's likely to be bound more than once, causing "already bound" errors, elimination of assign-to-const, or conflicts
                  "x1", "x2", "x3", "x4", "x5",
                  "y", "window", "this", "\u3056", "NaN",
 //                 "valueOf", "toString", // e.g. valueOf getter :P // bug 381242, etc
@@ -1852,17 +1851,17 @@ function makeId(depth)
 
 function makeComprehension(dr)
 {
-  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(dr);
+??  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(dr);
 
   if (dr < 0)
     return "";
 
   switch(rnd(4)) {
-  case 0: return "";
-  case 1: return cat([" for ",          "(", makeForInLHS(dr), " in ", makeExpr(dr-2), ")"]) + makeComprehension(dr - 1);
-  case 2: return cat([" for ", "each ", "(", makeId(dr),       " in ", makeExpr(dr-2), ")"]) + makeComprehension(dr - 1);
-  case 3: return cat([" if ", "(", makeExpr(dr-2), ")"]); // this is always last (and must be preceded by a "for", oh well)
-  default: return cat([" if ", "(", makeExpr(dr-2), ")"]); // this is always last (and must be preceded by a "for", oh well)
+?  case 0: return "";
+?  case 1: return cat([" for ",          "(", makeForInLHS(dr), " in ", makeExpr(dr-2), ")"]) + makeComprehension(dr - 1);
+?  case 2: return cat([" for ", "each ", "(", makeId(dr),       " in ", makeExpr(dr-2), ")"]) + makeComprehension(dr - 1);
+?  case 3: return cat([" if ", "(", makeExpr(dr-2), ")"]); // this is always last (and must be preceded by a "for", oh well)
+?  default: return cat([" if ", "(", makeExpr(dr-2), ")"]); // this is always last (and must be preceded by a "for", oh well)
   }
 }
 
@@ -1872,69 +1871,69 @@ function makeComprehension(dr)
 // for..in LHS can be a single variable OR it can be a destructuring array of exactly two elements.
 function makeForInLHS(dr)
 {
-  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(dr);
+??  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(dr);
 
 // JS 1.7 only (removed in JS 1.8)
 //
 //  if (version() == 170 && rnd(4) == 0)
 //    return cat(["[", makeLValue(dr), ", ", makeLValue(dr), "]"]);
 
-  return makeLValue(dr);
+?  return makeLValue(dr);
 }
 
 
 function makeLValue(depth)
 {
-  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(depth);
+??  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(depth);
 
   if (depth <= 0 || (rnd(2) == 1))
-    return makeId(depth - 1);
+?    return makeId(depth - 1);
 
   var dr = rnd(depth);
 
-  return (rndElt(lvalueMakers))(dr);
+?  return (rndElt(lvalueMakers))(dr);
 }
 
 
 var lvalueMakers = [
   // Simple variable names :)
-  function(dr) { return cat([makeId(dr)]); },
+?  function(dr) { return cat([makeId(dr)]); },
 
   // Destructuring
-  function(dr) { return makeDestructuringLValue(dr); },
-  function(dr) { return makeDestructuringLValue(dr); },
+?  function(dr) { return makeDestructuringLValue(dr); },
+//R  function(dr) { return makeDestructuringLValue(dr); },
   
   // Properties
-  function(dr) { return cat([makeId(dr), ".", makeId(dr)]); },
-  function(dr) { return cat([makeExpr(dr), ".", makeId(dr)]); },
-  function(dr) { return cat([makeExpr(dr), "[", "'", makeId(dr), "'", "]"]); },
+?  function(dr) { return cat([makeId(dr), ".", makeId(dr)]); },
+?  function(dr) { return cat([makeExpr(dr), ".", makeId(dr)]); },
+?  function(dr) { return cat([makeExpr(dr), "[", "'", makeId(dr), "'", "]"]); },
 
   // Special properties
-  function(dr) { return cat([makeId(dr), ".", rndElt(specialProperties)]); },
+?  function(dr) { return cat([makeId(dr), ".", rndElt(specialProperties)]); },
 
   // Certain functions can act as lvalues!  See JS_HAS_LVALUE_RETURN in js engine source.
-  function(dr) { return cat([makeId(dr), "(", makeExpr(dr), ")"]); },
-  function(dr) { return cat(["(", makeExpr(dr), ")", "(", makeExpr(dr), ")"]); },
+?  function(dr) { return cat([makeId(dr), "(", makeExpr(dr), ")"]); },
+?  function(dr) { return cat(["(", makeExpr(dr), ")", "(", makeExpr(dr), ")"]); },
 
   // Parenthesized lvalues can cause problems ;)
-  function(dr) { return cat(["(", makeLValue(dr), ")"]); },
+?  function(dr) { return cat(["(", makeLValue(dr), ")"]); },
 
-  function(dr) { return makeExpr(dr); } // intentionally bogus, but not quite garbage.
+?  function(dr) { return makeExpr(dr); } // intentionally bogus, but not quite garbage.
 ];
 
 function makeDestructuringLValue(depth)
 {
-  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(depth);
+??  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(depth);
 
   var dr = depth - 1;
 
   if (dr < 0 || rnd(4) == 1)
-    return makeId(dr);
+?    return makeId(dr);
 
   if (rnd(6) == 1)
-    return makeLValue(dr);
+?    return makeLValue(dr);
 
-  return (rndElt(destructuringLValueMakers))(dr);
+?  return (rndElt(destructuringLValueMakers))(dr);
 }
 
 var destructuringLValueMakers = [
@@ -1958,8 +1957,8 @@ var destructuringLValueMakers = [
   },
 
   // destructuring assignment: objects
-  function(dr) { return cat(["(", "{ ", makeId(dr), ": ", makeDestructuringLValue(dr), " }", ")"]); },
-  function(dr) { return cat(["(", "{ ", makeId(dr), ": ", makeDestructuringLValue(dr), ", ", makeId(dr), ": ", makeDestructuringLValue(dr), " }", ")"]); },
+?  function(dr) { return cat(["(", "{ ", makeId(dr), ": ", makeDestructuringLValue(dr), " }", ")"]); },
+?  function(dr) { return cat(["(", "{ ", makeId(dr), ": ", makeDestructuringLValue(dr), ", ", makeId(dr), ": ", makeDestructuringLValue(dr), " }", ")"]); },
 ];
 
 // Allow "holes".
@@ -1975,9 +1974,9 @@ function maybeMakeDestructuringLValue(depth)
 
 function makeTerm(depth)
 {
-  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(depth);
+??  if (rnd(TOTALLY_RANDOM) == 2) return totallyRandom(depth);
 
-  return (rndElt(termMakers))(depth);
+?  return (rndElt(termMakers))(depth);
 }
 
 var termMakers = [
