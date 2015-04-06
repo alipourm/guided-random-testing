@@ -110,14 +110,14 @@ function simpleSource(s)
 var haveRealUneval = (typeof uneval == "function");
 if (!haveRealUneval)
   uneval = simpleSource;
-
+/*
 if (engine == ENGINE_UNKNOWN)
   printImportant("Targeting an unknown JavaScript engine!");
 else if (engine == ENGINE_SPIDERMONKEY)
   printImportant("Targeting SpiderMonkey / Gecko.");
 else if (engine == ENGINE_JAVASCRIPTCORE)
   printImportant("Targeting JavaScriptCore / WebKit.");
-
+*/
 function printAndStop(s,n)
 {
   printImportant(s)

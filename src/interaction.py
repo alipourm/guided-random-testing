@@ -54,8 +54,10 @@ def guided_random_testing(test_object, configuration):
 
 
 def conf_file(test):
-  str_features = open(get_test_name(test) + '.conf').read().split()
-  return map(lambda s: int(s.replace('--', '')), str_features)
+  import re
+  str_tcfile = open(get_test_name(test) + '.js').read()
+  k = set(re.findall("##\d+##", str_tcfile))
+  return map(lambda s: int(s[2:-2]), k)
 
 
 

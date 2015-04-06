@@ -44,6 +44,7 @@ class Coverage:
         self.JS = CONFIG.JS
         self.GCOVDIR = CONFIG.GCOVDIR
         self.OBJDIR = CONFIG.OBJDIR
+        self.SRCDIR = CONFIG.SRCDIR
         self.line_cov   = []
         self.line_ncov   = []
         self.branch_cov = []
@@ -60,7 +61,7 @@ class Coverage:
     def calculate(self):
         execute("rm -rf " + self.OBJDIR + "*.gcda")
         execute("rm -rf " + self.GCOVDIR + "*.gcov")
-        executetc()
+        self.executetc()
         for f in glob.glob(self.SRCDIR + "*.c"):
            execute("gcov -f -b -o {0} {1} >& /dev/null".format(CONFIG.OBJDIR, f))
         self.collect_coverage()
@@ -186,5 +187,5 @@ class Coverage:
 
 def dumpcoverage(directory):
 	execute("rm -rf " + self.OBJDIR + "*.gcda")
-    execute("rm -rf " + self.GCOVDIR + "*.gcov")
+        execute("rm -rf " + self.GCOVDIR + "*.gcov")
 	  	

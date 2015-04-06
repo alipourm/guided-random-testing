@@ -110,14 +110,14 @@ function simpleSource(s)
 var haveRealUneval = (typeof uneval == "function");
 if (!haveRealUneval)
   uneval = simpleSource;
-
+/*
 if (engine == ENGINE_UNKNOWN)
   printImportant("Targeting an unknown JavaScript engine!");
 else if (engine == ENGINE_SPIDERMONKEY)
   printImportant("Targeting SpiderMonkey / Gecko.");
 else if (engine == ENGINE_JAVASCRIPTCORE)
   printImportant("Targeting JavaScriptCore / WebKit.");
-
+*/
 function printAndStop(s)
 {
   printImportant(s)
@@ -295,7 +295,7 @@ function start()
     // Lower for use with WAY_TOO_MUCH_GC, to 70 or so.
     for (var i = 0; i < 1000; ++i)
       testOne();
-    dumpln("It's looking good!"); // Magic string that multi_timed_run.py looks for
+    //    dumpln("It's looking good!"); // Magic string that multi_timed_run.py looks for
   } else {
     setTimeout(testStuffForAWhile, 200);
   }
@@ -324,7 +324,7 @@ function testOne()
 //      code = dp;
 //  }
 //  dumpln("dumpln(\"tryItOut\" + " + uneval(code) + ");");
-  dumpln("dumpln(\"tryItOut "+count+"\")")
+//  dumpln("dumpln(\"tryItOut "+count+"\")")
   dumpln("tryItOut(" + uneval(code) + ");");
 
 //  tryItOut(code);
@@ -953,9 +953,9 @@ function cat(toks)
     return totallyRandom(2);
   
   var torture = (rnd(170) == 57);
-  if (torture)
+  /* (if (torture)
     dumpln("Torture!!!");
-    
+  */  
   var s = maybeLineBreak();
   for (var i = 0; i < toks.length; ++i) {
 
@@ -1319,17 +1319,17 @@ var exceptionyStatementMakers = [
   function(dr) { return "let(" + makeLetHead(dr) + ") ((function(){" + makeExceptionyStatement(dr) + "})());" },
 
   // Commented out due to causing too much noise on stderr and causing a nonzero exit code :/
-/*
+
   // Generator close hooks: called during GC in this case!!!
-  function(dr) { return "(function () { try { yield " + makeExpr(dr) + " } finally { " + makeStatement(dr) + " } })().next()"; },
+  //  function(dr) { return "(function () { try { yield " + makeExpr(dr) + " } finally { " + makeStatement(dr) + " } })().next()"; },
 
-  function(dr) { return "(function () { try { yield " + makeExpr(dr) + " } finally { " + makeStatement(dr) + " } })()"; },
-  function(dr) { return "(function () { try { yield " + makeExpr(dr) + " } finally { " + makeStatement(dr) + " } })"; },
-  function(dr) { 
-    return "function gen() { try { yield 1; } finally { " + makeStatement(dr) + " } } var i = gen(); i.next(); i = null;";
-  }
+  // function(dr) { return "(function () { try { yield " + makeExpr(dr) + " } finally { " + makeStatement(dr) + " } })()"; },
+  // function(dr) { return "(function () { try { yield " + makeExpr(dr) + " } finally { " + makeStatement(dr) + " } })"; },
+  // function(dr) { 
+  //  return "function gen() { try { yield 1; } finally { " + makeStatement(dr) + " } } var i = gen(); i.next(); i = null;";
+  // }
 
-*/
+
 ];
 
 function makeTryBlock(depth)
