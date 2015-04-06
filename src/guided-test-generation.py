@@ -34,15 +34,18 @@ def dump_coverage(f):
   line_cov =  c.get_percent_line()
   print line_cov
   LOG.info('line_cov:' + str(line_cov)) 
-  fn_cov = open(f + '.fcov', 'w')
   l_cov = open(f + '.lcov', 'w')
-  br_cov = open(f + '.bcov', 'w')
-  function_cov = c.functions
-  branch_cov = c.get_b_cov()
   line_cov = c.get_l_cov()
-  pickle.dump(function_cov, fn_cov)
-  pickle.dump(branch_cov, br_cov)
   pickle.dump(line_cov, l_cov)
+
+  #br_cov = open(f + '.bcov', 'w')
+  #branch_cov = c.get_b_cov()
+  #pickle.dump(branch_cov, br_cov)
+
+  #fn_cov = open(f + '.fcov', 'w')
+  #function_cov = c.functions
+  #pickle.dump(function_cov, fn_cov)
+
   
 
 fst = lambda (x,y):x
