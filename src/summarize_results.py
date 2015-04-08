@@ -17,13 +17,14 @@ def dumpnpyfiles(dir):
             print f
             try:
                 lcov = np.array(pickle.load(open(f + '.lcov')))
-                bcov = np.array(pickle.load(open(f + '.bcov')))
-                fcov = np.array(pickle.load(open(f + '.fcov')))
+                # bcov = np.array(pickle.load(open(f + '.bcov')))
+                # fcov = np.array(pickle.load(open(f + '.fcov')))
                 if linecov.size == 0:
                     linecov = lcov
                 else:
                     linecov += lcov
 
+ 		""" 
                 if branchcov.size == 0:
                     branchcov = bcov
                 else:
@@ -33,13 +34,13 @@ def dumpnpyfiles(dir):
                     functioncov = fcov
                 else:
                     functioncov = np.union1d(functioncov, fcov)
-
+                    """
             except IOError:
                 print 'IOError:', f
                 numinf += 1
     np.save(os.path.join(root, 'linecov'), linecov)
-    np.save(os.path.join(root, 'branchcov'), branchcov)
-    np.save(os.path.join(root, 'functioncov'), functioncov)
+#    np.save(os.path.join(root, 'branchcov'), branchcov)
+#    np.save(os.path.join(root, 'functioncov'), functioncov)
     np.save(os.path.join(root, 'numinf'), numinf)
 
 
@@ -58,5 +59,6 @@ def gathernypfiles(dir):
 
 indir = sys.argv[1]
 out = sys.argv[2]
+dumpnpyfiles(indir)
 df = gathernypfiles(indir)
 df.to_pickle(out)

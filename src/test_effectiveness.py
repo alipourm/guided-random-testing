@@ -32,7 +32,7 @@ def get_targets(f):
         data_num =  int(re.findall('replica(\d+)', directory)[0]) - 1
         # print directory
         directory = '/scratch/alipour/data/' + str(data_num) +  '/'.join(directory.split('/')[-3:])
-        basedata = '/scratch/alipour/data/' + str(data_num) + '/init/linecov.npy'
+        basedata = '/'.join(directory.split('/')[:-2]) + '/init/linecov.npy' 
         base = np.load(basedata)
         covdata = os.path.join(directory, 'linecov.npy')
         # print covdata
@@ -43,9 +43,9 @@ def get_targets(f):
             tech = 'halfswarm'
         # print d
         if d.size != 0:
-            print '{0}, {1}, {2}'.format(tech,  d[target], base[target])
+            print '{5}, {0}, {1}, {2}, {3}, {4}'.format(tech,  d[target], base[target], directory, basedata, target)
         else:
-            print '{0}, {1}, {2}'.format(tech, 0, base[target])
+             print '{5}, {0}, {1}, {2}, {3}, {4}'.format(tech,  0, base[target], directory, basedata, target)
         
 
             
