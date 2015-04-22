@@ -3,8 +3,15 @@ import sys
 import re
 import pickle
 import numpy as np
+import glob
 
 targets_conf = {}
+
+def jsfilecount(dir):
+	return len(glob.glob(os.path.join(dir,  '*.js')))
+
+def cfgexists(dir):
+	return len(glob.glob(os.path.join(dir, '*cfg'))) > 0	
 
 def get_targets(f):
     loglines = open(f).readlines()
@@ -32,8 +39,8 @@ def get_targets(f):
         data_num =  int(re.findall('replica(\d+)', directory)[0]) - 1
         # print directory
         directory = '/scratch/alipour/data/' + str(data_num) +  '/'.join(directory.split('/')[-3:])
-        basedata = '/'.join(directory.split('/')[:-2]) + '/init/linecov.npy' 
-        base = np.load(basedata)
+        basedata = '/'.join(directory.split('/')[:-2]) + '/init' 
+        base = np.load(basedata + '/linecov.npy')
         covdata = os.path.join(directory, 'linecov.npy')
         # print covdata
         d = np.load(open(covdata))
@@ -43,9 +50,11 @@ def get_targets(f):
             tech = 'halfswarm'
         # print d
         if d.size != 0:
-            print '{5}, {0}, {1}, {2}, {3}, {4}'.format(tech,  d[target], base[target], directory, basedata, target)
-        else:
-             print '{5}, {0}, {1}, {2}, {3}, {4}'.format(tech,  0, base[target], directory, basedata, target)
+		dd = d[target]
+	else:
+		dd = 0
+
+	print '{0}, {1}, {2}, {3}, {4},{5},{6},{7}, {8}'.format(tech,  dd, jsfilecount(directory), cfgexists(directory) , base[target], jsfilecount(basedata),  directory, basedata, target)
         
 
             
