@@ -12,7 +12,7 @@ import random
 # need for paralleization -- bottleneck is coverage
 
 
-LOG = logging.getLogger('guided-test')
+LOG = logging.getLogger('JS')
 LOG.setLevel(logging.DEBUG)
 fh = logging.FileHandler(LOG.name + '-debug.log', mode='w')
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -37,14 +37,6 @@ def dump_coverage(f):
   l_cov = open(f + '.lcov', 'w')
   line_cov = c.get_l_cov()
   pickle.dump(line_cov, l_cov)
-
-  #br_cov = open(f + '.bcov', 'w')
-  #branch_cov = c.get_b_cov()
-  #pickle.dump(branch_cov, br_cov)
-
-  #fn_cov = open(f + '.fcov', 'w')
-  #function_cov = c.functions
-  #pickle.dump(function_cov, fn_cov)
 
   
 
@@ -110,7 +102,7 @@ def agg_lines(df):
 
 LOWER_PRECENTAGE = 10
 HIGHER_PERCENTAGE = 30
-SAMPLE_SIZE = 10
+SAMPLE_SIZE = 100
 
 def pick_target(df, relations, selection_fn):
   df['lineno']= df.index.copy()
@@ -285,46 +277,39 @@ def main(experiment_no):
   LOG.info('Pick Targets Started')
   relations =[k for k in target_relation.columns if '_relation'in k]
   # print 'relations:', relations
-  for fn in swarmification_fn:
-      print fn.__name__
-#      targets = pick_target(target_relation, relations, select_2nd_quantile)
-      targets = pick_target_alex(target_relation, relations)
-      LOG.info('Generate MiniTests for Targets Started')
-      i = 0
-      os.mkdir(os.path.join(experiment_dir, fn.__name__))
-      print 'len(target):', len(targets)
-      for i in range(0, len(targets)):
-          # print 'target', targets.iloc[i]
+
+  targets = pick_target_alex(target_relation, relations)
+  LOG.info('Generate MiniTests for Targets Started')
+  print 'len(target):', len(targets)
+  LOG.info('Generate MiniTests for Targets Started')
+  for i in range(0, len(targets)):
+      os.mkdir(os.path.join(experiment_dir, str(i)))
+      print 'len(targets):', len(targets)
+      for fn in swarmification_fn:
+          print fn.__name__  
           t = targets.iloc[i]
           index = t.index
-          # print 'index:', index
-          # print 'relations:', t[relations].values
-          # print len(t[relations].values), len(relations)
           conf = get_conf_alex(t[relations].values, relations, fn)
           if conf == '':
-              LOG.info('All irrelevant for ' + str(t['lineno']) )
+              LOG.info('All irrelevant for ' + str(t['lineno']))
               continue
-
-          # print 'lineno', t['lineno']
-          
           conf_file = open(TARGET_CONF, 'w')
           conf_file.write(conf)
           conf_file.flush()
           conf_file.close()
-      
-          directory = os.path.join(experiment_dir, fn.__name__,  str(i))
+          directory = os.path.join(experiment_dir, str(i), fn.__name__)
           LOG.info("Targeted Test Begins")
-          LOG.info('Director: ' + directory)
-          LOG.info('Target: ' + str(t['lineno']) )
+          LOG.info('Directory:{0} Target:{1} ConfLen:{2}'.format(directory, str(t['lineno']), len(conf.split())))
+          LOG.info('Target: ' + str(t['lineno']))
           LOG.info('Confg:\n' + conf)
-             
           os.mkdir(directory)
           generate_tests(GUIDEDTESTGEN_TIME, directory, TARGET_CONF)
-          i = i + 1 
-  LOG.info('Generate MiniTests for Targets Ended')
+          
+   LOG.info('Generate MiniTests for Targets Ended')
 
 
 
-for i in range(1 ,6):
+start = int(sys.argv[1])
+for i in range(start , start + 5):
   print i
   main(i)
