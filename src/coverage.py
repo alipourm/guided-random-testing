@@ -65,7 +65,7 @@ class Coverage:
         self.executetc()
         olddir = os.getcwd()
         os.chdir(self.OBJDIR)
-        for f in glob.glob('*.gcda'):
+        for f in glob.glob('*.gcno'):
             gcov_cmd = "gcov {0}".format(f)
             status, output = execute(gcov_cmd)
         os.chdir(olddir)

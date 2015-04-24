@@ -24,16 +24,16 @@ LOG.addHandler(fh)
 
 
 def run(cmd):
-    print cmd
+#    print cmd
     return commands.getstatusoutput(cmd)
 
 
 def dump_coverage(tcname):
   c = Coverage(tcname)
-  line_cov =  c.get_percent_line()
-  print line_cov
-  LOG.info(tcname + ': line_cov:' + str(line_cov)) 
   line_cov = np.array(c.get_l_cov())
+  print '{0} of {1}'.format(np.sum(line_cov), line_cov.size)
+  LOG.info(tcname + '{0} of {1}'.format(np.sum(line_cov), line_cov.size))
+  
   np.save(tcname, line_cov)
 
 
@@ -94,7 +94,7 @@ def agg_lines(df):
 
 LOWER_PRECENTAGE = 10
 HIGHER_PERCENTAGE = 30
-SAMPLE_SIZE = 10
+SAMPLE_SIZE = 100
 
 def pick_target(df, relations, selection_fn):
   df['lineno']= df.index.copy()
