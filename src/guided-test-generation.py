@@ -272,7 +272,6 @@ def main(experiment_no):
   targets = pick_target_alex(target_relation, relations)
   LOG.info('Generate MiniTests for Targets Started')
   for i in range(0, len(targets)):
-      i = 0
       os.mkdir(os.path.join(experiment_dir, str(i)))
       print 'len(targets):', len(targets)
       for fn in swarmification_fn:
@@ -283,7 +282,6 @@ def main(experiment_no):
           if conf == '':
               LOG.info('All irrelevant for ' + str(t['lineno']))
               continue
-
           conf_file = open(TARGET_CONF, 'w')
           conf_file.write(conf)
           conf_file.flush()
