@@ -1,14 +1,15 @@
-import logging
-import commands
-import interaction
-import pandas as pd
-import os
-import numpy as np
 from coverage import Coverage
-import pickle
+import commands
 import consts
-import re
+import interaction
+import logging
+import numpy as np
+import os
+import pandas as pd
+import pickle
 import random
+import re
+import sys
 # need for paralleization -- bottleneck is coverage
 
 
@@ -305,7 +306,7 @@ def main(experiment_no):
           os.mkdir(directory)
           generate_tests(GUIDEDTESTGEN_TIME, directory, TARGET_CONF)
           
-   LOG.info('Generate MiniTests for Targets Ended')
+  LOG.info('Generate MiniTests for Targets Ended')
 
 
 
