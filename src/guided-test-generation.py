@@ -277,7 +277,6 @@ def main(experiment_no):
       print 'len(targets):', len(targets)
       for fn in swarmification_fn:
           print fn.__name__  
-
           t = targets.iloc[i]
           index = t.index
           conf = get_conf_alex(t[relations].values, relations, fn)
@@ -296,7 +295,7 @@ def main(experiment_no):
           LOG.info('Confg:\n' + conf)
           os.mkdir(directory)
           generate_tests(GUIDEDTESTGEN_TIME, directory, TARGET_CONF)
-          i = i + 1 
+          
   LOG.info('Generate MiniTests for Targets Ended')
 
 
