@@ -1,7 +1,7 @@
 import sys
 import subprocess
 import os
-import CONFIG
+import GCCCONFIG
 import commands
 import glob
 import time
@@ -41,10 +41,10 @@ def execute(cmd):
 class Coverage: 
 
     def __init__(self, test):
-        self.JS = CONFIG.JS
-        self.GCOVDIR = CONFIG.GCOVDIR
-        self.OBJDIR = CONFIG.OBJDIR
-        self.SRCDIR = CONFIG.SRCDIR
+        self.executable = GCCCONFIG.GCC
+        self.GCOVDIR = GCCCONFIG.GCOVDIR
+        self.OBJDIR = GCCCONFIG.OBJDIR
+        self.SRCDIR = GCCCONFIG.SRCDIR
         self.line_cov   = []
         self.line_ncov   = []
         self.branch_cov = []
@@ -53,8 +53,9 @@ class Coverage:
         self.tc = test
         self.elapsed = 0
         self.functions = []
-        self.vgrun = self.tc +".vgrun"
         self.calculate()
+        # self.executetc()
+
 
   
 
@@ -62,8 +63,12 @@ class Coverage:
         execute("rm -rf " + self.OBJDIR + "*.gcda")
         execute("rm -rf " + self.GCOVDIR + "*.gcov")
         self.executetc()
-        for f in glob.glob(self.SRCDIR + "*.c"):
-           execute("gcov -f -b -o {0} {1} >& /dev/null".format(CONFIG.OBJDIR, f))
+        olddir = os.getcwd()
+        os.chdir(self.OBJDIR)
+        for f in glob.glob('*.gcda'):
+            gcov_cmd = "gcov {0}".format(f)
+            status, output = execute(gcov_cmd)
+        os.chdir(olddir)
         self.collect_coverage()
 
 
@@ -71,20 +76,7 @@ class Coverage:
 
     def executetc(self, js=None):
         test = self.tc
-        vgrun = self.vgrun
-        execute("cp jsfunrun.js " + vgrun)
-        execute("cat " + test + " >> " + vgrun)
-        out = open(vgrun, 'a')
-        out.write('\ndumpln("ALL OK");\n')
-        out.flush()
-        out.close()
-
-        if js is None:
-            status, output =  execute('timeout 10 ' + self.JS + " " + vgrun) 
-        else:
-            status, output =  execute('timeout 10 ' + js + " -f  " + vgrun) 
-        execute("rm -f " + self.vgrun) 
-            
+        status, output =  execute('timeout 10 ' + self.executable + " " + test) 
         if status == 124: # timeout
             raise InfiniteLoopError(self.tc)
 
@@ -92,36 +84,32 @@ class Coverage:
 
 
     def collect_coverage(self):
-        gcovfiles = sorted(glob.glob('*.gcov'))
+        gcovfiles = sorted(glob.glob(self.GCOVDIR + '*.gcov'))
         for f in gcovfiles:
-            for l in open(f):
-                    ls = l.split()
-                    # print l
-                    if (ls[0] == "-:"):
+#            print f
+        
+            for l in open(f).readlines():
+                    ls = l.strip().split(':')
+                    
+#                    print f, l , ls
+
+                    if (ls[0] == '-'):
                         pass # none executable
-                    elif (ls[0] == "#####:"):
+                    elif (ls[0] == "#####"):
                         # not covered
                         self.line_cov.append(0)
                         self.line_ncov.append(0)
-                    elif ':' in ls[1]:
+                    elif ls[0].isdigit():
                         # covered 
+                        none = False
                         self.line_cov.append(1)
-                        self.line_ncov.append(int(ls[0].split(":")[0]))
+                        self.line_ncov.append(int(ls[0]))
+                    else:
+                        # logically funny, just to keep other things in the the case needed
+                        assert (0)
+                        continue
+        
 
-                    elif ls[0] == "function":
-                        self.function_cov.append(min(1, int(ls[3])))
-                        self.function_ncov.append(int(ls[3]))
-                        if 'JS_Convert' in ls:
-                            print 'fn:', ls[3]
-                        
-                        if min(1, int(ls[3])) == 1:
-                            self.functions.append(f + ':' + ls[1])
-
-                    elif ls[0] == "branch":
-                        if ls[1] != "never" and ls[3] != "0%":
-                            self.branch_cov.append(1)
-                        else:
-                            self.branch_cov.append(0)
 
  
     
@@ -161,8 +149,8 @@ class Coverage:
         return self.function_ncov
 
     def get_percent_line(self):
-        k = [l for l in self.line_cov if l != 0]
-        return float(len(k))/len(self.line_cov)
+       
+        return float(sum(self.line_cov))/len(self.line_cov)
 
     def get_percent_branch(self):
         k = [l for l in self.branch_cov if l != 0]
@@ -183,9 +171,3 @@ class Coverage:
     def get_total_function(self):
         k = [l for l in self.function_cov if l != 0]
         return len(k)
-
-
-def dumpcoverage(directory):
-	execute("rm -rf " + self.OBJDIR + "*.gcda")
-        execute("rm -rf " + self.GCOVDIR + "*.gcov")
-	  	
