@@ -61,14 +61,14 @@ class Coverage:
 
     def calculate(self):
         execute("rm -rf " + self.OBJDIR + "*.gcda")
-        execute("rm -rf " + self.GCOVDIR + "*.gcov")
+        execute("rm -rf " +  "*.gcov")
         self.executetc()
         olddir = os.getcwd()
-        os.chdir(self.OBJDIR)
-        for f in glob.glob('*.gcno'):
-            gcov_cmd = "gcov {0}".format(f)
+#        os.chdir(self.OBJDIR)
+        for f in glob.glob(self.OBJDIR +'*.gcno'):
+            gcov_cmd = "gcov -o {0} {1}".format(self.OBJDIR, f)
             status, output = execute(gcov_cmd)
-        os.chdir(olddir)
+#        os.chdir(olddir)
         self.collect_coverage()
 
 
@@ -84,7 +84,7 @@ class Coverage:
 
 
     def collect_coverage(self):
-        gcovfiles = sorted(glob.glob(self.GCOVDIR + '*.gcov'))
+        gcovfiles = sorted(glob.glob('*.gcov'))
         for f in gcovfiles:
 #            print f
         

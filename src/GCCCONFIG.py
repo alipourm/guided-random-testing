@@ -6,8 +6,8 @@ curdir = os.getcwd()+ os.sep
 
 SRCDIR = '../../gcc-4.4.7/host-x86_64-unknown-linux-gnu/gcc/'
 OBJDIR  = '../../gcc-4.4.7/host-x86_64-unknown-linux-gnu/gcc/'
-GCOVDIR =  OBJDIR
-#GCOVDIR = curdir 
+#GCOVDIR =  OBJDIR
+GCOVDIR = curdir 
 
 CSMITHPATHINC = '/scratch/projects/csmith/runtime'
 CSMITH_EXE = '/scratch/projects/csmithbin/bin/csmith'
