@@ -1,12 +1,12 @@
-import Configuration
-#import TestObject
-import testgen
-import consts
 from math import sqrt
-import numpy as np
-import pickle
+import Configuration
+import consts
 import glob
+import numpy as np
+import os
 import pandas as pd
+import pickle
+import testgen
 
 
 
@@ -173,12 +173,19 @@ def add_features(df, coverage_files):
           'feature_freq': feature_freq}
     
 
+def cleanup_summarize(directory, filepattern):
+  coverage_files = glob.glob(directory + filepattern)
+  coverage = get_total_coverage(coverage_files)
+  np.save(os.path.join(directory, consts.COVSUMMARYFILE), coverage)
+  for cf in coverage_files:
+    os.remove(cf)
 
 
 
 def get_feature_relations(coverage_files):
   df = load_data(coverage_files)
   data = add_features(df, coverage_files)
+
   feature_freq = data['feature_freq']
   df = data['df']
   # df = df1[df1['cov'] > 0]

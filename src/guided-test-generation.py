@@ -67,7 +67,6 @@ def generate_tests(time_length, directory, conf):
         print('problem in coverage')
         LOG.error('COVERAGE EXCEPTION ' + tc_name)
     i += 1
-
   print run('mv tc_* {0}'.format(directory))
   print run('cp *.cfg {0}'.format(directory))
 
@@ -94,7 +93,7 @@ def agg_lines(df):
 
 LOWER_PRECENTAGE = 10
 HIGHER_PERCENTAGE = 30
-SAMPLE_SIZE = 100
+SAMPLE_SIZE = 50
 
 def pick_target(df, relations, selection_fn):
   df['lineno']= df.index.copy()
@@ -233,8 +232,8 @@ def get_conf_alex(values, relations, sw_fn):
 
 INIT_CONF = 'init.cfg'
 TARGET_CONF = 'target.cfg'
-SEEDTESTGEN_TIME = 1800
-GUIDEDTESTGEN_TIME = 600
+SEEDTESTGEN_TIME = 10
+GUIDEDTESTGEN_TIME = 6
 
 def select_all(gr, l, h):
     return gr
@@ -263,6 +262,8 @@ def main(experiment_no):
   # print directory
   LOG.info('Calculating Targets Started')
   target_relation = interaction.get_feature_relations(glob.glob(directory + '/*.npy'))
+  interaction.cleanup_summarize(directory , '/*.npy')
+
   # print target_relation
   target_relation.to_csv('{0}/relations.csv'.format(directory))
   LOG.info('Calculating Targets Ended')
@@ -293,6 +294,7 @@ def main(experiment_no):
           LOG.info('Confg:\n' + conf)
           os.mkdir(directory)
           generate_tests(GUIDEDTESTGEN_TIME, directory, TARGET_CONF)
+          interaction.cleanup_summarize(directory , '/*.npy')
           
   LOG.info('Generate MiniTests for Targets Ended')
 

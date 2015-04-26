@@ -8,6 +8,7 @@ FEATURES_MAX = 24
 SUPRESSOR = 'S'
 IRRELAVENT = 'I'
 TRIGGER = 'T'
+COVSUMMARYFILE = "covsummary.npy"
 
 
 features = ["arrays",
