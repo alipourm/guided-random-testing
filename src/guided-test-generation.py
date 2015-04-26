@@ -103,7 +103,7 @@ def agg_lines(df):
 
 LOWER_PRECENTAGE = 10
 HIGHER_PERCENTAGE = 30
-SAMPLE_SIZE = 100
+SAMPLE_SIZE = 50
 
 def pick_target(df, relations, selection_fn):
   df['lineno']= df.index.copy()
