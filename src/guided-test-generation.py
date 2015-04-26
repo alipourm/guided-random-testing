@@ -92,20 +92,21 @@ def agg_lines(df):
   return lines
 
 
-LOWER_PRECENTAGE = 10
+LOWER_PRECENTAGE = 0
 HIGHER_PERCENTAGE = 30
-SAMPLE_SIZE = 100
+SAMPLE_SIZE = 20
 
-def pick_target(df, relations, selection_fn):
+def pick_target(df, relations):
   df['lineno']= df.index.copy()
   groups = df.groupby(relations)
+  linenos = groups.apply(list)
   gr = groups['cov'].agg({'average':np.mean, 'median':np.median, 'count': np.size})
   gr['TEMP']=gr.index.copy()
   gr['I']= gr['TEMP'].apply(lambda row: count(row)['I'])
   gr['T']= gr['TEMP'].apply(lambda row: count(row)['T'])
   gr['S']= gr['TEMP'].apply(lambda row: count(row)['S'])
   [l,h] = np.percentile(gr['median'].values, [LOWER_PRECENTAGE, HIGHER_PERCENTAGE])
-  gr = selection_fn(gr, l, h)
+ # gr = selection_fn(gr, l, h)
   # print 'after call',  len(gr)
   try:  
       samples = gr.loc[random.sample(gr.index, SAMPLE_SIZE)]
@@ -269,7 +270,7 @@ def main(experiment_no):
   LOG.info('Pick Targets Started')
   relations =[k for k in target_relation.columns if '_relation'in k]
   # print 'relations:', relations
-  targets = pick_target_alex(target_relation, relations)
+  targets = pick_target(target_relation, relations)
   LOG.info('Generate MiniTests for Targets Started')
   for i in range(0, len(targets)):
       os.mkdir(os.path.join(experiment_dir, str(i)))
@@ -296,8 +297,9 @@ def main(experiment_no):
           
   LOG.info('Generate MiniTests for Targets Ended')
 
-
+'''
 start = int(sys.argv[1])
 for i in range(start , start + 5):
   print i
   main(i)
+'''
