@@ -232,8 +232,8 @@ def get_conf_alex(values, relations, sw_fn):
 
 INIT_CONF = 'init.cfg'
 TARGET_CONF = 'target.cfg'
-SEEDTESTGEN_TIME = 10
-GUIDEDTESTGEN_TIME = 6
+SEEDTESTGEN_TIME = 3600
+GUIDEDTESTGEN_TIME = 600
 
 def select_all(gr, l, h):
     return gr
