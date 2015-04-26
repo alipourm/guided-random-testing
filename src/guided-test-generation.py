@@ -271,6 +271,7 @@ def main(experiment_no):
   # print directory
   LOG.info('Calculating Targets Started')
   target_relation = interaction.get_feature_relations(glob.glob(directory + '/*.lcov'))
+  interaction.cleanup_summarize(directory , '/*.lcov')
   # print target_relation
   target_relation.to_csv('{0}/relations.csv'.format(directory))
   LOG.info('Calculating Targets Ended')
@@ -305,6 +306,8 @@ def main(experiment_no):
           LOG.info('Confg:\n' + conf)
           os.mkdir(directory)
           generate_tests(GUIDEDTESTGEN_TIME, directory, TARGET_CONF)
+          interaction.cleanup_summarize(directory , '/*.lcov')
+
           
   LOG.info('Generate MiniTests for Targets Ended')
 
