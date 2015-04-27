@@ -118,6 +118,8 @@ def get_total_coverage(coverage_files):
   """
   pre: len(coverage_files) > 0
   """
+  if len(coverage_files) == 0:
+    return np.array([])
   first = coverage_files[0]
   rest = coverage_files[1:]
   coverage_vector = pickle.load(open(first))
