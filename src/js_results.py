@@ -17,14 +17,14 @@ for logfile in logfile_list:
             initdir = line.strip().split()[-1]
             initcovfile = os.path.join(initdir, 'covsummary.npy')
             initcov = np.load(initcovfile)
-            origtsize = len(glob.glob(os.path.join(initdir, "*.c")))
+            origtsize = len(glob.glob(os.path.join(initdir, "*.js")))
         # print initcov.size
         if 'Directory:' in line and 'Target:' in line:
             lparts = line.split()
             for part in lparts:
                 if part.startswith('Directory'):
                     directory = part.replace('Directory:', '')
-                    tsize = len(glob.glob(os.path.join(directory, "*.c")))
+                    tsize = len(glob.glob(os.path.join(directory, "*.js")))
                 if part.startswith('Target'):
                     target = int(part.replace('Target:', ''))
             covfile = os.path.join(directory, 'covsummary.npy')
@@ -32,7 +32,7 @@ for logfile in logfile_list:
                 coverage = np.load(covfile)[target]
                 print '{0},{1},{2},{3},{4},{5},{6}'.format(directory, directory.split(os.sep)[-1], target, coverage,  initcov[target], tsize, origtsize)
 
-            except IOError:
+            except Exception:
                 pass
             
 
