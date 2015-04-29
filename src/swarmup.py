@@ -2,40 +2,35 @@ import sys
 import random
 import consts
 
-infn = sys.argv[1]
-inconfn = sys.argv[2]
-outfn = sys.argv[3]
-outconfn = sys.argv[4]
+
+inconfn = sys.argv[1]
+outfn = sys.argv[2]
+
 
 config = open(inconfn).read().strip().split()
 potential = [l for l in range(consts.FEATURES_MIN, consts.FEATURES_MAX+1) if ('+'+ str(l)) in config]
 necessary = [l for l in range(consts.FEATURES_MIN, consts.FEATURES_MAX+1) if ('++'+  str(l)) in config]
-
+suppressors = [l for l in range(consts.FEATURES_MIN, consts.FEATURES_MAX+1) if l not in potential and l not in necessary]
 
 
 outf = open(outfn,'w')
-outcf = open(outconfn, 'w')
+
 
 
 prev = ''
 feature_num = 0 
 
+res = []
 
-for line in open(infn):
-    l = line.split()
-#    line = line.strip()
-    if feature_num < consts.FEATURES_MAX and ((l != []) and ((l[0] == "function(dr)") or
-                       (l[0] == "function(depth)")) and("}," in line)):
-        if line != prev:
-            feature_num += 1
-        if ((random.randint(0,1) == 0) and feature_num in potential) or (feature_num in necessary):
-            outf.write(line)
-            outcf.write("--" + str(feature_num) + " ")
-#    elif ((l != []) and (l[0] == "case")):
-#        n = n + 1
-#        if (random.randint(0,1) == 0):
-#            outf.write(line)
-#            outcf.write("--" + str(n) + " ")
+for line in open(inconfn):
+    l = line.strip()
+    feature = int(l.replace('+', ''))
+    if ((random.randint(0,1) == 0) and feature in potential) or (feature in necessary):
+        outf.write(str(feature) + ' ')
+        res.append('--' + consts.features[int(feature)])
     else:
-        outf.write(line)
-    prev = line
+        res.append('--no-' + consts.features[int(feature)])
+
+for i in suppressors:
+    res.append('--no-' + consts.features[i])
+print ' '.join(res)

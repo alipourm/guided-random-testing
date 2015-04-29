@@ -9,6 +9,7 @@ import pickle
 import testgen
 
 
+
 def F((l , h), r):
   if np.isnan(l):
     l = 0
@@ -54,9 +55,10 @@ def guided_random_testing(test_object, configuration):
 
 def conf_file(test):
   import re
-  str_tcfile = open(get_test_name(test) + '.js').read()
-  k = set(re.findall("##\d+##", str_tcfile))
-  return map(lambda s: int(s[2:-2]), k)
+  str_features = open(test + '.conf').read().strip().split()
+  int_features = map(lambda s: int(s), str_features)
+  return int_features
+
 
 
 
@@ -120,11 +122,11 @@ def get_total_coverage(coverage_files):
   """
   first = coverage_files[0]
   rest = coverage_files[1:]
-  coverage_vector = pickle.load(open(first))
+  coverage_vector = np.load(first)
   for f in rest:
     print f
     try:
-      coverage_vector = np.add(coverage_vector, pickle.load(open(f)))
+      coverage_vector = np.add(coverage_vector, np.load(f))
     except EOFError:
       pass
   return  coverage_vector
@@ -161,8 +163,8 @@ def add_features(df, coverage_files):
   for cf in coverage_files:
     print cf
     try:
-      coverage = np.array(pickle.load(open(cf)))
-      for f in conf_file(cf):
+      coverage = np.load(cf)
+      for f in conf_file(cf.replace('.npy', '')):
         df['f' + str(f)] += coverage
         feature_freq[f] += 1
     except EOFError:
@@ -171,6 +173,12 @@ def add_features(df, coverage_files):
           'feature_freq': feature_freq}
     
 
+def cleanup_summarize(directory, filepattern):
+  coverage_files = glob.glob(directory + filepattern)
+  coverage = get_total_coverage(coverage_files)
+  np.save(os.path.join(directory, consts.COVSUMMARYFILE), coverage)
+  for cf in coverage_files:
+    os.remove(cf)
 
 def cleanup_summarize(directory, filepattern):
   coverage_files = glob.glob(directory + filepattern)
@@ -184,6 +192,7 @@ def cleanup_summarize(directory, filepattern):
 def get_feature_relations(coverage_files):
   df = load_data(coverage_files)
   data = add_features(df, coverage_files)
+
   feature_freq = data['feature_freq']
   df = data['df']
   # df = df1[df1['cov'] > 0]
