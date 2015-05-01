@@ -1,5 +1,5 @@
 from coverage import Coverage
-import GCCCONFIG
+import YAFFSCONFIG
 import commands
 import consts
 import interaction
@@ -52,16 +52,14 @@ def generate_tests(time_length, directory, conf):
   while time.time()-start < time_length:
     tc_id = str(i).zfill(7)
     tc_name = "tc_{0}.c".format(tc_id)
-    status, csmith_conf = run("python swarmup.py {0} {1}.conf".format(conf, tc_name))
-    # ls print status, output
-
+    status, yaffs_conf = run("python swarmup.py {0}".format(conf))
     print tc_name
-    status, output = run('{0} {1} > {2}'.format(GCCCONFIG.CSMITH_EXE, csmith_conf, tc_name))
-
-    # print status, output
-    # break
+    status, output = run('{0} --tclen 100 {1}'.format(YAFFSCONFIG.YAFSSTESTGEN_EXE, yaffs_conf))
+    features =  set(re.findall('\n(\d+),', output))
+    features_str = ' '.join(features)
+    open(tc_name, 'w').write(output)
+    open(tc_name + '.conf', 'w').write(features_str)
     try:
-        
         dump_coverage(tc_name)
     except ValueError:#Exception: 
         print('problem in coverage')
@@ -232,7 +230,7 @@ def get_conf_alex(values, relations, sw_fn):
 
 INIT_CONF = 'init.cfg'
 TARGET_CONF = 'target.cfg'
-SEEDTESTGEN_TIME = 3600
+SEEDTESTGEN_TIME = 1800
 GUIDEDTESTGEN_TIME = 600
 
 def select_all(gr, l, h):

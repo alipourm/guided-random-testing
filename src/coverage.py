@@ -1,7 +1,7 @@
 import sys
 import subprocess
 import os
-import GCCCONFIG
+import YAFFSCONFIG
 import commands
 import glob
 import time
@@ -41,10 +41,10 @@ def execute(cmd):
 class Coverage: 
 
     def __init__(self, test):
-        self.executable = GCCCONFIG.GCC
-        self.GCOVDIR = GCCCONFIG.GCOVDIR
-        self.OBJDIR = GCCCONFIG.OBJDIR
-        self.SRCDIR = GCCCONFIG.SRCDIR
+        self.executable = YAFFSCONFIG.YAFFS
+        self.GCOVDIR = YAFFSCONFIG.GCOVDIR
+        self.OBJDIR = YAFFSCONFIG.OBJDIR
+        self.SRCDIR = YAFFSCONFIG.SRCDIR
         self.line_cov   = []
         self.line_ncov   = []
         self.branch_cov = []
@@ -68,6 +68,7 @@ class Coverage:
         for f in glob.glob(self.OBJDIR +'*.gcno'):
             gcov_cmd = "gcov -o {0} {1}".format(self.OBJDIR, f)
             status, output = execute(gcov_cmd)
+#            print output
 #        os.chdir(olddir)
         self.collect_coverage()
 
@@ -84,9 +85,9 @@ class Coverage:
 
 
     def collect_coverage(self):
-        gcovfiles = sorted(glob.glob('*.gcov'))
+        gcovfiles = sorted(glob.glob('yaffs2.c.gcov'))
         for f in gcovfiles:
-#            print f
+            print f
         
             for l in open(f).readlines():
                     ls = l.strip().split(':')

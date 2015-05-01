@@ -4,7 +4,6 @@ import consts
 
 
 inconfn = sys.argv[1]
-outfn = sys.argv[2]
 
 
 config = open(inconfn).read().strip().split()
@@ -13,7 +12,6 @@ necessary = [l for l in range(consts.FEATURES_MIN, consts.FEATURES_MAX+1) if ('+
 suppressors = [l for l in range(consts.FEATURES_MIN, consts.FEATURES_MAX+1) if l not in potential and l not in necessary]
 
 
-outf = open(outfn,'w')
 
 
 
@@ -26,8 +24,8 @@ for line in open(inconfn):
     l = line.strip()
     feature = int(l.replace('+', ''))
     if ((random.randint(0,1) == 0) and feature in potential) or (feature in necessary):
-        outf.write(str(feature) + ' ')
-        res.append('--' + consts.features[int(feature)])
+        pass
+#        res.append('--' + consts.features[int(feature)])
     else:
         res.append('--no-' + consts.features[int(feature)])
 
