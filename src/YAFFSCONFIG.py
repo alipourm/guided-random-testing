@@ -9,6 +9,6 @@ OBJDIR  = '../../yaffstest/yaffs2tester/'
 GCOVDIR = curdir 
 
 
-YAFSSTESTGEN_EXE = '../../yaffs/yaffs2tester/testcasegenerator '
-YAFFS = '../../yaffs/yaffs2tester/yaffs2_gcov '
+YAFSSTESTGEN_EXE = '../../yaffstest/yaffs2tester/testcasegenerator '
+YAFFS = '../../yaffstest/yaffs2tester/yaffs2_gcov '
 
