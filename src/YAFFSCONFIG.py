@@ -3,8 +3,8 @@ import os
 curdir = os.getcwd()+ os.sep
 
 
-SRCDIR = '../../yaffs/yaffs2tester/'
-OBJDIR  = '../../yaffs/yaffs2tester/'
+SRCDIR = '../../yaffstest/yaffs2tester/'
+OBJDIR  = '../../yaffstest/yaffs2tester/'
 #GCOVDIR =  OBJDIR
 GCOVDIR = curdir 
 
