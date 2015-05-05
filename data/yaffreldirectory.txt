@@ -1,0 +1,14 @@
+/scratch/yaffs_replica1/guided-random-testing/src/1/init/relations.csv
+/scratch/yaffs_replica1/guided-random-testing/src/0/init/relations.csv
+/scratch/yaffs_replica1/guided-random-testing/src/2/init/relations.csv
+/scratch/yaffs_replica1/guided-random-testing/src/3/init/relations.csv
+/scratch/yaffs_replica2/guided-random-testing/src/5/init/relations.csv
+/scratch/yaffs_replica2/guided-random-testing/src/6/init/relations.csv
+/scratch/yaffs_replica3/guided-random-testing/src/12/init/relations.csv
+/scratch/yaffs_replica3/guided-random-testing/src/13/init/relations.csv
+/scratch/yaffs_replica3/guided-random-testing/src/11/init/relations.csv
+/scratch/yaffs_replica3/guided-random-testing/src/10/init/relations.csv
+/scratch/yaffs_replica4/guided-random-testing/src/17/init/relations.csv
+/scratch/yaffs_replica4/guided-random-testing/src/16/init/relations.csv
+/scratch/yaffs_replica4/guided-random-testing/src/15/init/relations.csv
+/scratch/yaffs_replica4/guided-random-testing/src/18/init/relations.csv
