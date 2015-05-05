@@ -1,5 +1,6 @@
 FEEDBACK = 0
 CONFIGURATIOn = 1
+COVSUMMARYFILE = "covsummary.npy"
 
 
 Z = 1.96

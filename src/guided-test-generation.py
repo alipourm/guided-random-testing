@@ -1,5 +1,6 @@
 from coverage import Coverage
 import GCCCONFIG
+
 import commands
 import consts
 import interaction
@@ -12,6 +13,7 @@ import random
 import re
 import sys
 # need for paralleization -- bottleneck is coverage
+
 
 
 LOG = logging.getLogger('GCC-guided-test')
@@ -35,6 +37,7 @@ def dump_coverage(tcname):
   LOG.info(tcname + '{0} of {1}'.format(np.sum(line_cov), line_cov.size))
   
   np.save(tcname, line_cov)
+
 
 
 
@@ -261,8 +264,10 @@ def main(experiment_no):
   LOG.info('Generating Initial Test Suite Ended' + ' ' + directory)
   # print directory
   LOG.info('Calculating Targets Started')
+
   target_relation = interaction.get_feature_relations(glob.glob(directory + '/*.npy'))
   interaction.cleanup_summarize(directory , '/*.npy')
+
 
   # print target_relation
   target_relation.to_csv('{0}/relations.csv'.format(directory))
@@ -270,8 +275,10 @@ def main(experiment_no):
   LOG.info('Pick Targets Started')
   relations =[k for k in target_relation.columns if '_relation'in k]
   # print 'relations:', relations
+
   targets = pick_target_alex(target_relation, relations)
   LOG.info('Generate MiniTests for Targets Started')
+
   for i in range(0, len(targets)):
       os.mkdir(os.path.join(experiment_dir, str(i)))
       print 'len(targets):', len(targets)
@@ -294,9 +301,12 @@ def main(experiment_no):
           LOG.info('Confg:\n' + conf)
           os.mkdir(directory)
           generate_tests(GUIDEDTESTGEN_TIME, directory, TARGET_CONF)
+
           interaction.cleanup_summarize(directory , '/*.npy')
+
           
   LOG.info('Generate MiniTests for Targets Ended')
+
 
 
 start = int(sys.argv[1])

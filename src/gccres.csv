@@ -1,3 +1,4 @@
+directory, treatment, target, newcov,  oldcov, newtssize, origtsize
 /scratch/gcc_replica1/guided-random-testing/src/0/0/no_swarm,no_swarm,258494,64,256,73,533
 /scratch/gcc_replica1/guided-random-testing/src/0/0/half_swarm,half_swarm,258494,61,256,68,533
 /scratch/gcc_replica1/guided-random-testing/src/0/1/no_swarm,no_swarm,223959,69,292,69,533

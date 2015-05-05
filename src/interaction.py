@@ -180,6 +180,13 @@ def cleanup_summarize(directory, filepattern):
   for cf in coverage_files:
     os.remove(cf)
 
+def cleanup_summarize(directory, filepattern):
+  coverage_files = glob.glob(directory + filepattern)
+  coverage = get_total_coverage(coverage_files)
+  np.save(os.path.join(directory, consts.COVSUMMARYFILE), coverage)
+  for cf in coverage_files:
+    os.remove(cf)
+
 
 
 def get_feature_relations(coverage_files):
@@ -193,15 +200,6 @@ def get_feature_relations(coverage_files):
     print f 
     r = float(feature_freq[f])/ len(coverage_files)
     df['f' + str(f) + '_relation'] = wilson_score_interval(df['cov'], df['f' + str(f)], r)
-#    df['if' + str(f)] = df['if' + str(f)].apply(lambda (l,h): (l,h) if not np.isnan(l) else (0., 1.))
-#    df['f' + str(f) + '_relation'] = df.apply(lambda row: F(r, 
-#                                                            row['if'+ str(f)][0], 
-#                                                            row['if'+ str(f)][1]),
-#                                              axis=1)
 
   
   return df
-
-
-
-
