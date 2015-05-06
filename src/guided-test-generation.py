@@ -61,7 +61,7 @@ def generate_tests(time_length, directory, conf):
     # print status, output
     # break
     filtered = filter(lambda s: s.startswith("try"), output.split('\n'))
-    if len(filtered) == 1:
+    if len(filtered) == 100:
       run("cp swarm.conf tc_{0}.conf".format(tc_id))
       tc_name = "tc_{0}.js".format(tc_id)
       outfn = open(tc_name, 'w')
