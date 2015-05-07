@@ -18,7 +18,7 @@ import sys
 
 LOG = logging.getLogger('GCC-guided-test')
 LOG.setLevel(logging.DEBUG)
-fh = logging.FileHandler(LOG.name + '-debug.log', mode='w')
+fh = logging.FileHandler(LOG.name + '-debug.log', mode='a')
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 fh.setFormatter(formatter)
 LOG.addHandler(fh)
@@ -74,6 +74,7 @@ def generate_tests(time_length, directory, conf):
   print run('cp *.cfg {0}'.format(directory))
 
 
+
 def get_rels(l, r):
   return [i for i in l if i == r]
 
@@ -124,6 +125,19 @@ def pick_target_alex(df, relations):
   [l,h] = np.percentile(df2['cov'].values, [LOWER_PRECENTAGE, HIGHER_PERCENTAGE])
   gr = df2[(df2['cov'] >= l) & (df2['cov'] <= h)]
   try:  samples = gr.loc[random.sample(gr.index, SAMPLE_SIZE)]
+  except ValueError: 
+      LOG.debug('Sample larger than population')
+      samples = gr
+  # print 'samples:',  samples
+  return samples
+
+
+def pick_n_target(df, relations,n):
+  df['lineno']= df.index.copy()
+  df2 = df[df['cov'] != 0]
+  [l,h] = np.percentile(df2['cov'].values, [LOWER_PRECENTAGE, HIGHER_PERCENTAGE])
+  gr = df2[(df2['cov'] >= l) & (df2['cov'] <= h)]
+  try:  samples = gr.loc[random.sample(gr.index, n)]
   except ValueError: 
       LOG.debug('Sample larger than population')
       samples = gr
@@ -309,7 +323,73 @@ def main(experiment_no):
 
 
 
+
+def roundrobin(time_length, directory, configurationfiles):
+  i = 1
+  start = time.time()
+ 
+  while time.time()-start < time_length:
+    for conf in configurationfiles:
+        if not time.time()-start < time_length:
+            tc_id = str(i).zfill(7)
+            tc_name = "tc_{0}.c".format(tc_id)
+            status, csmith_conf = run("python swarmup.py {0} {1}.conf".format(conf, tc_name))
+# ls print status, output
+
+            print tc_name
+            status, output = run('{0} {1} > {2}'.format(GCCCONFIG.CSMITH_EXE, csmith_conf, tc_name))
+
+    # print status, output
+    # break
+            try:
+        
+                dump_coverage(tc_name)
+            except ValueError:#Exception: 
+                print('problem in coverage')
+                LOG.error('COVERAGE EXCEPTION ' + tc_name)
+            i += 1
+  print run('mv tc_* {0}'.format(directory))
+  print run('cp *.cfg {0}'.format(directory))
+
+
+def multiline(directory, n, times = 5):
+  target_relation = pd.DataFrame.from_csv('{0}/relations.csv')
+  relations =[k for k in target_relation.columns if '_relation'in k]
+  for i in range(times):
+      targets = pick_n_target(target_relation, relations, n)
+      confs = targets[relations].values
+      lines = target['lineno'].values
+      print 'targets:{0}'.format(lines)
+      configurations = []
+      for it, c in enumerate(confs):
+          conf = get_conf_alex(c, relations, no_swarm) # we noswarm
+          if conf == '':
+              continue
+          cfgname = TARGET_CONF + str(it)
+          configurations.append(cfgname)
+          conf_file = open(cfgname, 'w')
+          configurations[]
+          conf_file.write(conf)
+          conf_file.flush()
+          conf_file.close()
+          
+      exp_dir = os.path.join(directory, 'roundrobin_{0}_{1}'.format(i,n)
+      os.mkdir(exp_dir)
+      LOG.info("Targeted Multi Test Begins")
+      LOG.info('Directory:{0} Targets:{1} N:{2}'.format(exp_dir, str(lines), len(lines)))
+      roundrobin(GUIDEDTESTGEN_TIME, exp_dir, configurations)
+      interaction.cleanup_summarize(exp_dir , '/*.npy')
+
+          
+multiline()
+
+
+
+
+'''
+
 start = int(sys.argv[1])
 for i in range(start , start + 5):
   print i
   main(i)
+'''
