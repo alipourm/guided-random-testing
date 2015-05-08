@@ -368,7 +368,6 @@ def multiline(directory, n, times = 5):
           cfgname = TARGET_CONF + str(it)
           configurations.append(cfgname)
           conf_file = open(cfgname, 'w')
-          configurations[]
           conf_file.write(conf)
           conf_file.flush()
           conf_file.close()
