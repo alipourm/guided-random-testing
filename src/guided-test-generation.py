@@ -330,12 +330,11 @@ def roundrobin(time_length, directory, configurationfiles):
  
   while time.time()-start < time_length:
     for conf in configurationfiles:
-        if not time.time()-start < time_length:
+        if time.time()-start < time_length:
             tc_id = str(i).zfill(7)
             tc_name = "tc_{0}.c".format(tc_id)
             status, csmith_conf = run("python swarmup.py {0} {1}.conf".format(conf, tc_name))
 # ls print status, output
-
             print tc_name
             status, output = run('{0} {1} > {2}'.format(GCCCONFIG.CSMITH_EXE, csmith_conf, tc_name))
 
@@ -353,12 +352,12 @@ def roundrobin(time_length, directory, configurationfiles):
 
 
 def multiline(directory, n, times = 5):
-  target_relation = pd.DataFrame.from_csv('{0}/relations.csv')
+  target_relation = pd.DataFrame.from_csv('{0}/relations.csv'.format(directory))
   relations =[k for k in target_relation.columns if '_relation'in k]
   for i in range(times):
       targets = pick_n_target(target_relation, relations, n)
       confs = targets[relations].values
-      lines = target['lineno'].values
+      lines = targets['lineno'].values
       print 'targets:{0}'.format(lines)
       configurations = []
       for it, c in enumerate(confs):
@@ -372,7 +371,7 @@ def multiline(directory, n, times = 5):
           conf_file.flush()
           conf_file.close()
           
-      exp_dir = os.path.join(directory, 'roundrobin_{0}_{1}'.format(i,n)
+      exp_dir = os.path.join(directory, 'roundrobin_{0}_{1}'.format(i,n))
       os.mkdir(exp_dir)
       LOG.info("Targeted Multi Test Begins")
       LOG.info('Directory:{0} Targets:{1} N:{2}'.format(exp_dir, str(lines), len(lines)))
@@ -382,8 +381,12 @@ def multiline(directory, n, times = 5):
 dirs = sys.argv[1:]
 print dirs
 for d in dirs:
+   cur_dir = os.getcwd()
+   d = os.path.join(cur_dir, d)
+   print d
    multiline(os.path.join(d, 'init'), 4)
-
+   multiline(os.path.join(d, 'init'), 10)
+   multiline(os.path.join(d, 'init'), 20)
 
 
 
