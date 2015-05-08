@@ -380,8 +380,10 @@ def multiline(directory, n, times = 5):
       roundrobin(GUIDEDTESTGEN_TIME, exp_dir, configurations)
       interaction.cleanup_summarize(exp_dir , '/*.npy')
 
-          
-multiline()
+dirs = sys.argv[1:]
+print dirs
+for d in dirs:
+   multiline(os.path.join(d, 'init'), 4)
 
 
 
