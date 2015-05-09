@@ -81,6 +81,42 @@ def generate_tests(time_length, directory, conf):
   print run('cp *.cfg {0}'.format(directory))
 
 
+def roundrobin(time_length, directory, confs):
+  i = 1
+  start = time.time()
+  # print conf
+  
+  while time.time()-start < time_length:
+      for conf in confs:
+          if time.time()-start < time_length:
+              tc_id = str(i).zfill(7)	
+              status, output = run("python swarmup.py {0} {1} swarm.js swarm.conf".format(JSFUN_FUZ_PATH, conf))
+    # ls print status, output
+              status, output = run("js -f swarm.js".format(dir))
+              # print status, output
+              # break
+              filtered = filter(lambda s: s.startswith("try"), output.split('\n'))
+              if len(filtered) == 100:
+                  run("cp swarm.conf tc_{0}.conf".format(tc_id))
+                  tc_name = "tc_{0}.js".format(tc_id)
+                  outfn = open(tc_name, 'w')
+                  for l in filtered:
+                      outfn.write(l + '\n')
+                      outfn.flush()
+                      outfn.close()
+                  i += 1 
+                  try:
+                      dump_coverage(tc_name)
+                  except ValueError:#Exception: 
+                      print('problem in coverage')
+                      LOG.error('COVERAGE EXCEPTION ' + tc_name)
+              else:
+                  print 'Retrying', i
+  print run('mv tc_* {0}'.format(directory))
+  print run('cp *.cfg {0}'.format(directory))
+
+
+
 def get_rels(l, r):
   return [i for i in l if i == r]
 
