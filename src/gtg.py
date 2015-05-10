@@ -39,8 +39,8 @@ elif subject == 'js':
     from JSTestGen import testgen
     LOG = logging.getLogger('JS')
     INIT_CONF = 'JSinit.cfg'
-    SEEDTESTGEN_TIME = 5
-    GUIDEDTESTGEN_TIME = 3
+    SEEDTESTGEN_TIME = 1800
+    GUIDEDTESTGEN_TIME = 600
     tc_postfix = '.js'
 
 
@@ -52,7 +52,7 @@ LOG.addHandler(fh)
 
 
 def run(cmd):
-    print cmd
+    # print cmd
     return commands.getstatusoutput(cmd)
 
 
@@ -186,11 +186,11 @@ def get_feature_relations(coverage_files):
 
 def dump_coverage(f):
     c = Coverage(f)
-    line_cov = c.get_percent_line()
-    print line_cov
+    pline_cov = c.get_percent_line()
+    # print line_cov
     l_cov = open(f + '.lcov', 'w')
     line_cov = c.get_l_cov()
-    LOG.info('line_cov: {0} | {1} out of {2}'.format(line_cov, np.sum(line_cov), len(line_cov)))
+    LOG.info('line_cov: {0} | {1} out of {2}'.format(pline_cov, np.sum(line_cov), len(line_cov)))
     pickle.dump(line_cov, l_cov)
 
   
@@ -233,7 +233,7 @@ def generate_tests(time_length, directory, confs):
                     break
                 print 'Retrying', i
   run('mv tc_* {0}'.format(directory))
-  run('cp *.cfg {0}'.format(directory))
+  run('mv target*.cfg {0}'.format(directory))
   return i
 
 
@@ -402,7 +402,7 @@ def merge_greedy(configurations, targets):
     results = []
     for (c, ts) in cp:
         if c not in eliminated:
-            print type(c), c.shape
+            # print type(c), c.shape
             for i in ts:
                 results.append((c,i))
     return [results]
@@ -416,7 +416,7 @@ def targetedtest(targetsdf, experiment_dir, merge_function):
     configurations = targetsdf[relations].values
     targets = targetsdf.index
     newconfigurations = merge_function(configurations, targets)
-    print newconfigurations
+    # print newconfigurations
     for k, clist in enumerate(newconfigurations):
         os.mkdir(os.path.join(experiment_dir, str(k)))
         for mode in modes:
@@ -446,10 +446,21 @@ def targetedtest(targetsdf, experiment_dir, merge_function):
     LOG.info('Generate MiniTests for Targets Ended')
 
 
-if __name__ == '__main__':
-    res = init(0)
+def experiment(i):
+    res = init(i)
     df = res['df']
     tssize = res['tssize']
-    target = pick_target(df,tssize, 0.1, 0.3, 3)
-    # targetedtest(target,'test', roundrobin_merge)
-    targetedtest(target,'test2', merge_greedy)
+    target = pick_target(df,tssize, 0.1, 0.3, 5)
+    targetedtest(target,'{0}/individual.{0}'.format(i), individual)
+
+    regressionsizes = [2,3,4,5,10,20]
+    for r in regressionsizes:
+        target = pick_target(df,tssize, 0.1, 0.3, r)
+        # targetedtest(target,'test', roundrobin_merge)
+        targetedtest(target,'{0}/greedy.{0}.{1}'.format(i, r), merge_greedy)
+        targetedtest(target,'{0}/roundroubin.{0}.{1}'.format(i, r), roundrobin_merge)
+
+
+if __name__ == '__main__':
+    for i in range(10):
+        experiment(i)

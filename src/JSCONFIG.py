@@ -1,4 +1,5 @@
 import os
+import myutils
 
 curdir = os.getcwd()+ os.sep
 
@@ -9,3 +10,21 @@ SRCDIR = '../../spidermonkey/js1.6/src/'
 OBJDIR  = "../../spidermonkey/js1.6/src/Linux_All_DBG.OBJ/"
 
 JSFUN_FUZ_PATH = "new_jsfunswarm2.js"
+GITREPO = 'git@github.com:osustarg/spidermonkey.git'
+gtg =  'git@github.com:alipourm/guided-random-testing.git'
+
+def prepare(rootdir):
+    cwd = os.getcwd()
+    os.mkdir(rootdir)
+    os.chdir(rootdir)
+    print myutils.run('git clone {0}'.format(GITREPO))
+    print myutils.run('git clone {0}'.format(gtg))
+    os.chdir('spidermonkey/js1.6/src/')
+    print myutils.run('make -f Makefile.ref -j 8')
+    os.chdir(cwd)
+    os.chdir(rootdir)
+    os.chdir('guided-random-testing')
+    print myutils.run('git fetch')
+    print myutils.run('git checkout master')
+    print myutils.run('python gtg js& > /dev/null')
+    os.chdir(cwd)
