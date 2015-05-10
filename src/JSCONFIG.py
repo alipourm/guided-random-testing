@@ -26,5 +26,5 @@ def prepare(rootdir):
     os.chdir('guided-random-testing/src')
     print myutils.run('git fetch')
     print myutils.run('git checkout master')
-    myutils.run('python gtg js & > /dev/null')
+    myutils.run('python gtg.py js & > /dev/null')
     os.chdir(cwd)
