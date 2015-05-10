@@ -20,7 +20,7 @@ def prepare(rootdir):
     print myutils.run('git clone {0}'.format(GITREPO))
     print myutils.run('git clone {0}'.format(gtg))
     os.chdir('spidermonkey/js1.6/src/')
-    print myutils.run('make -f Makefile.ref -j 8')
+    print myutils.run('gmake -f Makefile.ref -j 2')
     os.chdir(cwd)
     os.chdir(rootdir)
     os.chdir('guided-random-testing/src')
