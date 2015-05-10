@@ -30,8 +30,8 @@ elif subject == 'yaffs':
     from YAFFSTestGen import testgen
     LOG = logging.getLogger('YAFFS')
     INIT_CONF = 'YAFFSinit.cfg'
-    SEEDTESTGEN_TIME = 1800
-    GUIDEDTESTGEN_TIME = 600
+    SEEDTESTGEN_TIME = 3
+    GUIDEDTESTGEN_TIME = 3
     tc_postfix = '.c'
 elif subject == 'js':
     import JSCONSTS as consts
@@ -45,7 +45,7 @@ elif subject == 'js':
 
 
 LOG.setLevel(logging.DEBUG)
-fh = logging.FileHandler('{0}-debug.log'.format(LOG.name, time.asctime().replace(' ', '')), mode='w')
+fh = logging.FileHandler('{0}-debug-{1}.log'.format(LOG.name, sys.argv[2]), mode='w')
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 fh.setFormatter(formatter)
 LOG.addHandler(fh)
@@ -340,10 +340,9 @@ def get_conf(values, relations, mode):
     return '\n'.join(l)
 
 
-def init(experiment_no):
-    LOG.info('experiment: ' + str(experiment_no))
+def init(experiment_dir):
+    LOG.info('Dir: ' + experiment_dir)
     cur_dir = os.getcwd()
-    experiment_dir = os.path.join(cur_dir, str(experiment_no))
     os.mkdir(experiment_dir)
     directory = os.path.join(experiment_dir, 'init')
     os.mkdir(directory)
@@ -409,8 +408,6 @@ def merge_greedy(configurations, targets):
 
 
 def targetedtest(targetsdf, experiment_dir, merge_function):
-    cur_dir = os.getcwd()
-    experiment_dir = os.path.join(cur_dir, experiment_dir)
     os.mkdir(experiment_dir)
     relations =[k for k in targetsdf.columns if '_relation'in k]
     configurations = targetsdf[relations].values
@@ -452,15 +449,14 @@ def experiment(i):
     tssize = res['tssize']
     target = pick_target(df,tssize, 0.1, 0.3, 5)
     targetedtest(target,'{0}/individual.{0}'.format(i), individual)
-
     regressionsizes = [2,3,4,5,10,20]
-    for r in regressionsizes:
-        target = pick_target(df,tssize, 0.1, 0.3, r)
-        # targetedtest(target,'test', roundrobin_merge)
-        targetedtest(target,'{0}/greedy.{0}.{1}'.format(i, r), merge_greedy)
-        targetedtest(target,'{0}/roundroubin.{0}.{1}'.format(i, r), roundrobin_merge)
+    for k in range(5):
+        for r in regressionsizes:
+            target = pick_target(df,tssize, 0.1, 0.3, r)
+            # targetedtest(target,'test', roundrobin_merge)
+            targetedtest(target,'{0}/greedy.{1}.{2}'.format(i, k, r), merge_greedy)
+            targetedtest(target,'{0}/roundroubin.{1}.{2}'.format(i, k, r), roundrobin_merge)
 
 
 if __name__ == '__main__':
-    for i in range(10):
-        experiment(i)
+    experiment(sys.argv[2])
