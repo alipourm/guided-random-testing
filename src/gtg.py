@@ -30,8 +30,8 @@ elif subject == 'yaffs':
     from YAFFSTestGen import testgen
     LOG = logging.getLogger('YAFFS')
     INIT_CONF = 'YAFFSinit.cfg'
-    SEEDTESTGEN_TIME = 3
-    GUIDEDTESTGEN_TIME = 3
+    SEEDTESTGEN_TIME = 1800
+    GUIDEDTESTGEN_TIME = 600
     tc_postfix = '.c'
 elif subject == 'js':
     import JSCONSTS as consts
@@ -341,7 +341,7 @@ def get_conf(values, relations, mode):
 
 
 def init(experiment_dir):
-    LOG.info('Dir: ' + experiment_dir)
+    LOG.info('Directory: ' + experiment_dir)
     cur_dir = os.getcwd()
     os.mkdir(experiment_dir)
     directory = os.path.join(experiment_dir, 'init')
