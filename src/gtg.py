@@ -37,6 +37,7 @@ elif subject == 'js':
     import JSCONSTS as consts
     from JSCoverage import Coverage
     from JSTestGen import testgen
+    import JSCOFIG as config
     LOG = logging.getLogger('JS')
     INIT_CONF = 'JSinit.cfg'
     SEEDTESTGEN_TIME = 8
@@ -402,8 +403,8 @@ def merge_greedy(configurations, targets):
     for (c, ts) in cp:
         if c not in eliminated:
             # print type(c), c.shape
-            for i in ts:
-                results.append((c,i))
+            # for i in ts:
+                results.append((c,ts))
     return [results]
 
 
@@ -465,12 +466,23 @@ def dofullrandom(directory):
     generate_tests(GUIDEDTESTGEN_TIME, newdir, [FULLRANDOMCFG])
           
 
-
 def experiment(i):
     res = init(i)
     dofullrandom(i)
     df = res['df']
     tssize = res['tssize']
+    print subject
+    if subject == 'js':
+        print 'taken'
+        for b in config.bugs:
+            print 'taken', b
+            target = regression[Confg,bugs[b]]
+            targetedtest(target,'{0}/regression.{1}.{2}'.format(i, b), merge_greedy)
+            targetedtest(target,'{0}/regression.{1}.{2}'.format(i, b), roundrobin_merge)
+            
+            
+
+
     target = pick_target(df,tssize, 0.1, 0.3, 5)
     targetedtest(target,'{0}/individuals'.format(i), individual)
     regressionsizes = [2,3,4,5,10,20]
@@ -484,3 +496,4 @@ def experiment(i):
 
 if __name__ == '__main__':
     experiment(sys.argv[2])
+
