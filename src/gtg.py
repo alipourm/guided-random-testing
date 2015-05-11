@@ -6,6 +6,7 @@ import random
 import re
 import time
 import glob
+import logging
 import sys
 import numpy as np
 import pandas as pd
@@ -37,7 +38,7 @@ elif subject == 'js':
     import JSCONSTS as consts
     from JSCoverage import Coverage
     from JSTestGen import testgen
-    import JSCOFIG as config
+    import JSCONFIG as config
     LOG = logging.getLogger('JS')
     INIT_CONF = 'JSinit.cfg'
     SEEDTESTGEN_TIME = 8
@@ -321,7 +322,7 @@ def get_feature(f):
 
 
 
-modes = ['halfswarm', 'noswarm']
+modes = ['halfswarm', 'noswarm', 'nosup']
 
 
 def get_conf(values, relations, mode):
@@ -331,6 +332,9 @@ def get_conf(values, relations, mode):
         feature_str = get_feature(x[1])
         if mode == 'fullrandom':
             l.append('++' + feature_str)
+        elif mode == 'nosup':
+            if x[0] != 'S':
+                l.append('++' + feature_str)
         else:
             if x[0] == 'T':
                 l.append('++' + feature_str)
@@ -338,6 +342,7 @@ def get_conf(values, relations, mode):
                 if mode == 'halfswarm':
                     l.append('+' + feature_str)
     print mode, l
+    print 'suppressors', sum([1 for s in values if s=='S'])
     return '\n'.join(l)
 
 
@@ -403,7 +408,7 @@ def merge_greedy(configurations, targets):
     for (c, ts) in cp:
         if c not in eliminated:
             # print type(c), c.shape
-            # for i in ts:
+            for i in ts:
                 results.append((c,ts))
     return [results]
 
@@ -476,9 +481,9 @@ def experiment(i):
         print 'taken'
         for b in config.bugs:
             print 'taken', b
-            target = regression[Confg,bugs[b]]
-            targetedtest(target,'{0}/regression.{1}.{2}'.format(i, b), merge_greedy)
-            targetedtest(target,'{0}/regression.{1}.{2}'.format(i, b), roundrobin_merge)
+            target = regression(df, config.bugs[b])
+            targetedtest(target,'{0}/regression.greedy.{1}'.format(i, b), merge_greedy)
+            targetedtest(target,'{0}/regression.roundrobin.{1}'.format(i, b), roundrobin_merge)
             
             
 

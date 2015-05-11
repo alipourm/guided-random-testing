@@ -11,7 +11,8 @@ def testgen(tc_name, conf):
     features = re.findall('/\*##(\d+)##\*/', output)
 
     filtered = filter(lambda s: s.startswith("try"), output.split('\n'))
-  #  print output
+    # print output
+    # print 'TCLEN: {0}'.format(len(filtered))
     if len(filtered) == 100:
         outfn = open(tc_name, 'w')
         for l in filtered:

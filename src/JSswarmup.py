@@ -21,4 +21,4 @@ for line in open(infn):
             outf.write(line)
     else:
         outf.write(line)
-outfn.close()
+#outfn.close()
