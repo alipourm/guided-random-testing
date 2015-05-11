@@ -461,7 +461,7 @@ def dofullrandom(directory):
     newdir = os.path.join(directory, 'random')
     os.mkdir(newdir)
     LOG.info("RANDOM Test Begins")
-    LOG.info('Directory:{0} Mode:{1}'.format(newdir 'fullrandom'))
+    LOG.info('Directory:{0} Mode:{1}'.format(newdir, 'fullrandom'))
     generate_tests(GUIDEDTESTGEN_TIME, newdir, [FULLRANDOMCFG])
           
 
