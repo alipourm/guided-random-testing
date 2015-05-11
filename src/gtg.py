@@ -41,8 +41,8 @@ elif subject == 'js':
     import JSCONFIG as config
     LOG = logging.getLogger('JS')
     INIT_CONF = 'JSinit.cfg'
-    SEEDTESTGEN_TIME = 8
-    GUIDEDTESTGEN_TIME = 6
+    SEEDTESTGEN_TIME = 1800
+    GUIDEDTESTGEN_TIME = 600
     tc_postfix = '.js'
 
 
@@ -141,8 +141,9 @@ def add_features(df, coverage_files):
     try:
       coverage = np.array(pickle.load(open(cf)))
       for f in conf_file(tc):
-        df['f' + str(f)] += coverage
-        feature_freq[int(f)] += 1
+          if consts.FEATURES_MIN <= f <= consts.FEATURES_MAX:
+              df['f' + str(f)] += coverage
+              feature_freq[int(f)] += 1
     except EOFError:
       print cf
   return {'df': df,
@@ -233,7 +234,7 @@ def generate_tests(time_length, directory, confs):
                 if retrycount > 100:
                     worthy = False
                     break
-                print 'Retrying', i
+                # print 'Retrying', i
   run('mv tc_* {0}'.format(directory))
   run('mv target*.cfg {0}'.format(directory))
   return i
@@ -341,8 +342,8 @@ def get_conf(values, relations, mode):
             elif x[0] == 'I':
                 if mode == 'halfswarm':
                     l.append('+' + feature_str)
-    print mode, l
-    print 'suppressors', sum([1 for s in values if s=='S'])
+    # print mode, l
+    # print 'suppressors', sum([1 for s in values if s=='S'])
     return '\n'.join(l)
 
 
@@ -370,7 +371,7 @@ def individual(configurations, targets):
         print 'Inequal target and confs'
         exit(1)
     for j in range(len(configurations)):
-        results.append([(configurations[j], targets[j])])
+        results.append((configurations[j], targets[j]))
     return results
 
 
@@ -378,7 +379,7 @@ def roundrobin_merge(configurations, targets):
     if len(configurations) != len(targets):
         print 'Inequal target and confs'
         exit(1)
-    return [zip(configurations, targets)]
+    return zip(configurations, targets)
 
 
 def amRestrict(me, other):
@@ -396,21 +397,26 @@ def merge_greedy(configurations, targets):
         print 'Inequal target and confs'
         exit(1)
     cp = [(c, [target]) for (c, target) in zip(configurations, targets)]
+    # print 'cp', cp
+    
     eliminated = []
     for i, c1 in enumerate(cp):
         for c2 in cp[i+1:]:
             if amRestrict(c1, c2):
-
-                eliminated.append(c2)
+                eliminated.append(c2[1])
                 for k in c2[1]:
                     c1[1].append(k)
+    
+    # print 'after', cp
+    # print 'elem', eliminated
     results = []
-    for (c, ts) in cp:
-        if c not in eliminated:
+    for (c, lines) in cp:
+        # print 'conf', c
+        if lines not in eliminated:
             # print type(c), c.shape
-            for i in ts:
-                results.append((c,ts))
-    return [results]
+            # for i in lines:
+                results.append((c,lines))
+    return results
 
 
 def targetedtest(targetsdf, experiment_dir, merge_function):
@@ -420,34 +426,40 @@ def targetedtest(targetsdf, experiment_dir, merge_function):
     targets = targetsdf.index
     newconfigurations = merge_function(configurations, targets)
     # print newconfigurations
-    for k, clist in enumerate(newconfigurations):
-        os.mkdir(os.path.join(experiment_dir, str(k)))
-        for mode in modes:
-
-            os.mkdir(os.path.join(experiment_dir, str(k), mode))
-            tlines = []
-            conffiles = []
-            for i, (c, t) in enumerate(clist):
+    # print 'targetdf', targetsdf
+    # print 'targets', targets
+    # print 'newconf', newconfigurations
+    for mode in modes:
+        conffiles = []
+        for k, clist in enumerate(newconfigurations):
+                # print 'k:', k
+                #'clist:', clist
+                (c, t) = clist
                 conf = get_conf(c, relations, mode)
                 if conf == '':
                     continue
-                cfn = 'target{0}.cfg'.format(i)
-                tlines.append(t)
+                cfn = 'target{0}.cfg'.format(k)
                 conffiles.append(cfn)
                 conf_file = open(cfn, 'w')
                 conf_file.write(conf)
                 conf_file.flush()
                 conf_file.close()
-
-            LOG.info('Generate MiniTests for Targets Started')
-            directory = os.path.join(experiment_dir, str(k), mode, merge_function.__name__)
-            LOG.info("Targeted Test Begins")
-            LOG.info('Directory:{0} Target:{1} Mode:{2}'.format(directory, str(tlines), mode))
-            LOG.info('Confg:{0}'.format(conffiles))
-            os.mkdir(directory)
+        LOG.info("Targeted Test Begins")
+        directory = os.path.join(experiment_dir, mode)
+        os.mkdir(directory)
+        if '-all-' not in experiment_dir:
+            LOG.info('Directory:{0} Target:{1} Mode:{2} Merge:{3}'.format(directory, str(t), mode, merge_function.__name__))
+        else:
+            LOG.info('Directory:{0} Target:{1} Mode:{2} Merge:{3}'.format(directory, '0', mode, merge_function.__name__))   
+        LOG.info('Confg:{0}'.format(conffiles))
+        if 'regression' in experiment_dir or '-all-' in experiment_dir:
+            generate_tests(GUIDEDTESTGEN_TIME*3, directory, conffiles)
+        else:
             generate_tests(GUIDEDTESTGEN_TIME, directory, conffiles)
-            cleanup_summarize(directory, '/*.lcov')
+        cleanup_summarize(directory, '/*.lcov')
     LOG.info('Generate MiniTests for Targets Ended')
+
+
 
 
 def getfullrandom():
@@ -469,34 +481,35 @@ def dofullrandom(directory):
     LOG.info("RANDOM Test Begins")
     LOG.info('Directory:{0} Mode:{1}'.format(newdir, 'fullrandom'))
     generate_tests(GUIDEDTESTGEN_TIME, newdir, [FULLRANDOMCFG])
+    LOG.info("RANDOM Test Ends")
           
+
 
 def experiment(i):
     res = init(i)
     dofullrandom(i)
     df = res['df']
     tssize = res['tssize']
-    print subject
+    
     if subject == 'js':
-        print 'taken'
+        # print 'taken'
         for b in config.bugs:
-            print 'taken', b
+            # print 'targetting', b, config.bugs[b]
             target = regression(df, config.bugs[b])
             targetedtest(target,'{0}/regression.greedy.{1}'.format(i, b), merge_greedy)
             targetedtest(target,'{0}/regression.roundrobin.{1}'.format(i, b), roundrobin_merge)
             
-            
-
-
     target = pick_target(df,tssize, 0.1, 0.3, 5)
     targetedtest(target,'{0}/individuals'.format(i), individual)
     regressionsizes = [2,3,4,5,10,20]
     for k in range(5):
         for r in regressionsizes:
             target = pick_target(df,tssize, 0.1, 0.3, r)
-            # targetedtest(target,'test', roundrobin_merge)
             targetedtest(target,'{0}/greedy.{1}.{2}'.format(i, k, r), merge_greedy)
             targetedtest(target,'{0}/roundroubin.{1}.{2}'.format(i, k, r), roundrobin_merge)
+
+    targetedtest(df,'{0}/lines-all-together'.format(i), merge_greedy)    
+    targetedtest(df,'{0}/lines-all-together'.format(i), roundrobin_merge)    
 
 
 if __name__ == '__main__':
