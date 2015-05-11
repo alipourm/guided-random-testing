@@ -30,8 +30,8 @@ elif subject == 'yaffs':
     from YAFFSTestGen import testgen
     LOG = logging.getLogger('YAFFS')
     INIT_CONF = 'YAFFSinit.cfg'
-    SEEDTESTGEN_TIME = 1800
-    GUIDEDTESTGEN_TIME = 600
+    SEEDTESTGEN_TIME = 900
+    GUIDEDTESTGEN_TIME = 300
     tc_postfix = '.c'
 elif subject == 'js':
     import JSCONSTS as consts
@@ -417,6 +417,7 @@ def targetedtest(targetsdf, experiment_dir, merge_function):
     for k, clist in enumerate(newconfigurations):
         os.mkdir(os.path.join(experiment_dir, str(k)))
         for mode in modes:
+
             os.mkdir(os.path.join(experiment_dir, str(k), mode))
             tlines = []
             conffiles = []
@@ -460,7 +461,7 @@ def dofullrandom(directory):
     newdir = os.path.join(directory, 'random')
     os.mkdir(newdir)
     LOG.info("RANDOM Test Begins")
-    LOG.info('Directory:{0} Mode:{1}'.format(directory, 'fullrandom'))
+    LOG.info('Directory:{0} Mode:{1}'.format(newdir 'fullrandom'))
     generate_tests(GUIDEDTESTGEN_TIME, newdir, [FULLRANDOMCFG])
           
 
@@ -471,7 +472,7 @@ def experiment(i):
     df = res['df']
     tssize = res['tssize']
     target = pick_target(df,tssize, 0.1, 0.3, 5)
-    targetedtest(target,'{0}/individual.{0}'.format(i), individual)
+    targetedtest(target,'{0}/individuals'.format(i), individual)
     regressionsizes = [2,3,4,5,10,20]
     for k in range(5):
         for r in regressionsizes:
