@@ -320,7 +320,7 @@ def get_feature(f):
 
 
 
-modes = ['fullrandom', 'halfswarm', 'noswarm']
+modes = ['halfswarm', 'noswarm']
 
 
 def get_conf(values, relations, mode):
@@ -443,8 +443,31 @@ def targetedtest(targetsdf, experiment_dir, merge_function):
     LOG.info('Generate MiniTests for Targets Ended')
 
 
+def getfullrandom():
+    l = []
+    for i in range(consts.FEATURES_MIN, consts.FEATURES_MAX+1):
+        l.append('++{0}'.format(i))
+    return '\n'.join(l)
+
+FULLRANDOMCFG='fullrandom.cfg'
+
+def dofullrandom(directory):
+    conf = getfullrandom()
+    conf_file = open(FULLRANDOMCFG, 'w')
+    conf_file.write(conf)
+    conf_file.flush()
+    conf_file.close()
+    newdir = os.path.join(directory, 'random')
+    os.mkdir(newdir)
+    LOG.info("RANDOM Test Begins")
+    LOG.info('Directory:{0} Mode:{1}'.format(directory, 'fullrandom'))
+    generate_tests(GUIDEDTESTGEN_TIME, newdir, [FULLRANDOMCFG])
+          
+
+
 def experiment(i):
     res = init(i)
+    dofullrandom(i)
     df = res['df']
     tssize = res['tssize']
     target = pick_target(df,tssize, 0.1, 0.3, 5)
