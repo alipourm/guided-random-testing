@@ -39,8 +39,8 @@ elif subject == 'js':
     from JSTestGen import testgen
     LOG = logging.getLogger('JS')
     INIT_CONF = 'JSinit.cfg'
-    SEEDTESTGEN_TIME = 1800
-    GUIDEDTESTGEN_TIME = 600
+    SEEDTESTGEN_TIME = 8
+    GUIDEDTESTGEN_TIME = 6
     tc_postfix = '.js'
 
 
