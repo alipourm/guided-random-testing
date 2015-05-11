@@ -45,7 +45,7 @@ elif subject == 'js':
 
 
 LOG.setLevel(logging.DEBUG)
-fh = logging.FileHandler('{0}-debug-{1}.log'.format(LOG.name, sys.argv[2]), mode='w')
+fh = logging.FileHandler('{0}-debug.log'.format(LOG.name), mode='w')
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 fh.setFormatter(formatter)
 LOG.addHandler(fh)
