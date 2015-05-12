@@ -499,15 +499,14 @@ def experiment(i):
             targetedtest(target,'{0}/regression.greedy.{1}'.format(i, b), merge_greedy)
             targetedtest(target,'{0}/regression.roundrobin.{1}'.format(i, b), roundrobin_merge)
             
-    target = pick_target(df,tssize, 0.1, 0.3, 5)
-    targetedtest(target,'{0}/individuals'.format(i), individual)
-    regressionsizes = [2,3,4,5,10,20]
+    regressionsizes = [1,2,3,4,5,10,20]
     for k in range(5):
         for r in regressionsizes:
             target = pick_target(df,tssize, 0.1, 0.3, r)
-            targetedtest(target,'{0}/greedy.{1}.{2}'.format(i, k, r), merge_greedy)
+            if r != 1:
+                targetedtest(target,'{0}/greedy.{1}.{2}'.format(i, k, r), merge_greedy)
             targetedtest(target,'{0}/roundroubin.{1}.{2}'.format(i, k, r), roundrobin_merge)
-
+    
     targetedtest(df,'{0}/lines-all-together'.format(i), merge_greedy)    
     targetedtest(df,'{0}/lines-all-together'.format(i), roundrobin_merge)    
 
