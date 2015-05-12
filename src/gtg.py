@@ -159,8 +159,8 @@ def cleanup_summarize(directory, filepattern):
   coverage = get_total_coverage(coverage_files)
   np.save(os.path.join(directory, consts.COVSUMMARYFILE), coverage)
   for cf in coverage_files:
-
     os.remove(cf)
+    os.remove(cf.replace('.lcov', ''))
 
 
 
