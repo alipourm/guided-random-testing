@@ -9,8 +9,8 @@ OBJDIR  = '../../gcc-4.4.7/host-x86_64-unknown-linux-gnu/gcc/'
 #GCOVDIR =  OBJDIR
 GCOVDIR = curdir
 
-CSMITHPATHINC = '~/tools/csmith/runtime'
-CSMITH_EXE = '~/tools/csmithbin/bin/csmith'
+CSMITHPATHINC = '/nfs/guille/groce/users/alipour/tools/csmith/runtime'
+CSMITH_EXE = '/nfs/guille/groce/users/alipour/tools/csmithbin/bin/csmith'
 GCC = '../../gcc/bin/gcc -O3 -I{0} '.format(CSMITHPATHINC)
 GCCLOC='/nfs/stak/students/a/alipour/public_html/tmp/gcc-core-4.4.7.tar.gz'
 gtg =  'git@github.com:alipourm/guided-random-testing.git'
