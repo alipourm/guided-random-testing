@@ -45,9 +45,13 @@ elif subject == 'js':
     GUIDEDTESTGEN_TIME = 600
     tc_postfix = '.js'
 
+os.mkdir(sys.argv[2])
+
+
+
 
 LOG.setLevel(logging.DEBUG)
-fh = logging.FileHandler('{0}-debug.log'.format(LOG.name), mode='w')
+fh = logging.FileHandler('{0}/{1}-debug.log'.format(sys.argv[2], LOG.name), mode='w')
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 fh.setFormatter(formatter)
 LOG.addHandler(fh)
@@ -70,9 +74,10 @@ def F((l, h), r):
     if h < r:
         return consts.SUPRESSOR
 
+Z = 1.96
 
 def wilson_score_interval (n, n_f, r):
-    z = consts.Z
+    z = Z
     p = (1.*n_f)/ n
     term1 = p + (z * z) / (2.*n)
     plus_minus = z * np.sqrt ((p * (1. - p) / n) + (z * z / (4. * n * n)))
@@ -86,10 +91,10 @@ def wilson_score_interval (n, n_f, r):
 
 
 def conf_file(test):
-    return open('{0}.conf'.format(test)).read().strip().split()
+    return  open('{0}.conf'.format(test)).read().strip().split()
 
 
-
+'''
 def compute_wilson(covering_tests, location):
     n = 0
     feature_occurance = {}
@@ -102,7 +107,7 @@ def compute_wilson(covering_tests, location):
     for f in feature_occurance:
        wilson[f] = wilson_score_interval(len(covering_tests), float(feature_occurance[f])/len(covering_tests))
     return wilson
-
+'''
 
 def get_total_coverage(coverage_files):
   """
@@ -116,7 +121,8 @@ def get_total_coverage(coverage_files):
   for f in rest:
     try:
         coverage_vector = np.add(coverage_vector, pickle.load(open(f)))
-    except EOFError:
+    except EOFError, ValueError:
+        LOG.info('Error in adding {0}'.format(0))
         pass
   return  coverage_vector
 
@@ -141,7 +147,7 @@ def add_features(df, coverage_files):
     try:
       coverage = np.array(pickle.load(open(cf)))
       for f in conf_file(tc):
-          if consts.FEATURES_MIN <= f <= consts.FEATURES_MAX:
+          if consts.FEATURES_MIN <= int(f) <= consts.FEATURES_MAX:
               df['f' + str(f)] += coverage
               feature_freq[int(f)] += 1
     except EOFError:
@@ -158,9 +164,10 @@ def cleanup_summarize(directory, filepattern):
   coverage_files = glob.glob(directory + filepattern)
   coverage = get_total_coverage(coverage_files)
   np.save(os.path.join(directory, consts.COVSUMMARYFILE), coverage)
-  for cf in coverage_files:
-    os.remove(cf)
-    os.remove(cf.replace('.lcov', ''))
+  covpattern = os.path.join(directory, "tc_*.lcov")
+  confpattern = os.path.join(directory, "tc_*.conf")
+  tcpatterns = os.path.join(directory, "tc_*.c") # we need to keep .js files
+  # run('rm -f {0} {1} {2}'.format(covpattern, confpattern, tcpatterns))
 
 
 
@@ -189,11 +196,11 @@ def get_feature_relations(coverage_files):
 
 def dump_coverage(f):
     c = Coverage(f)
-    pline_cov = c.get_percent_line()
+    # pline_cov = c.get_percent_line()
     # print line_cov
     l_cov = open(f + '.lcov', 'w')
     line_cov = c.get_l_cov()
-    LOG.info('line_cov: {0} | {1} out of {2}'.format(pline_cov, np.sum(line_cov), len(line_cov)))
+    # LOG.info('line_cov: {0} | {1} out of {2}'.format(pline_cov, np.sum(line_cov), len(line_cov)))
     pickle.dump(line_cov, l_cov)
 
   
@@ -208,7 +215,7 @@ def generate_tests(time_length, directory, confs):
   start = time.time()
   # print conf
   retrycount = 0
-  newi = i
+  newi = 0
   worthy = True
 
   # print 'confs:', confs
@@ -233,8 +240,10 @@ def generate_tests(time_length, directory, confs):
 
                 if retrycount > 100:
                     worthy = False
-                    break
+                    
                 # print 'Retrying', i
+  if subject != 'js':
+      run('rm -f tc_*.c '.format(directory))
   run('mv tc_* {0}'.format(directory))
   run('mv target*.cfg {0}'.format(directory))
   return i
@@ -348,14 +357,12 @@ def get_conf(values, relations, mode):
 
 
 def init(experiment_dir):
-    LOG.info('Directory: ' + experiment_dir)
-    cur_dir = os.getcwd()
-    os.mkdir(experiment_dir)
+
     directory = os.path.join(experiment_dir, 'init')
     os.mkdir(directory)
     LOG.info('Generating Initial Test Suite Started')
     testsuitesize = generate_tests(SEEDTESTGEN_TIME, directory, [INIT_CONF])
-    LOG.info('Generating Initial Test Suite Ended' + ' ' + directory)
+    LOG.info('Directory:{0} TSSIZE:{1}'.format(directory, testsuitesize))
     LOG.info('Calculating Targets Started')
     target_relation = get_feature_relations(glob.glob(directory + '/*.lcov'))
     cleanup_summarize(directory , '/*.lcov')
@@ -379,7 +386,9 @@ def roundrobin_merge(configurations, targets):
     if len(configurations) != len(targets):
         print 'Inequal target and confs'
         exit(1)
-    return zip(configurations, targets)
+    k =  zip(configurations, targets)
+    print 'round robin end:', k
+    return [(c, [t]) for (c,t) in k]
 
 
 def amRestrict(me, other):
@@ -425,10 +434,7 @@ def targetedtest(targetsdf, experiment_dir, merge_function):
     configurations = targetsdf[relations].values
     targets = targetsdf.index
     newconfigurations = merge_function(configurations, targets)
-    # print newconfigurations
-    # print 'targetdf', targetsdf
-    # print 'targets', targets
-    # print 'newconf', newconfigurations
+    print 'newconf', newconfigurations
     for mode in modes:
         conffiles = []
         for k, clist in enumerate(newconfigurations):
@@ -436,6 +442,7 @@ def targetedtest(targetsdf, experiment_dir, merge_function):
                 #'clist:', clist
                 (c, t) = clist
                 conf = get_conf(c, relations, mode)
+                # print '- m:{0} c:{1}'.format(merge_function.__name__, conf)
                 if conf == '':
                     continue
                 cfn = 'target{0}.cfg'.format(k)
@@ -447,15 +454,13 @@ def targetedtest(targetsdf, experiment_dir, merge_function):
         LOG.info("Targeted Test Begins")
         directory = os.path.join(experiment_dir, mode)
         os.mkdir(directory)
-        if '-all-' not in experiment_dir:
-            LOG.info('Directory:{0} Target:{1} Mode:{2} Merge:{3}'.format(directory, str(t), mode, merge_function.__name__))
-        else:
-            LOG.info('Directory:{0} Target:{1} Mode:{2} Merge:{3}'.format(directory, '0', mode, merge_function.__name__))   
         LOG.info('Confg:{0}'.format(conffiles))
-        if 'regression' in experiment_dir or '-all-' in experiment_dir:
-            generate_tests(GUIDEDTESTGEN_TIME*3, directory, conffiles)
+        tssize = 0
+        if 'regression' in experiment_dir:
+            tssize = generate_tests(GUIDEDTESTGEN_TIME*3, directory, conffiles)
         else:
-            generate_tests(GUIDEDTESTGEN_TIME, directory, conffiles)
+            tssize = generate_tests(GUIDEDTESTGEN_TIME, directory, conffiles)
+        LOG.info('Directory:{0} Target:{1}, Mode:{2}, Merge:{3}, BeforeMerge:{4}, AfterMerge:{5}, TSSIZE:{6}'.format(directory, list(targets), mode, merge_function.__name__, len(targets), len(newconfigurations), tssize))
         cleanup_summarize(directory, '/*.lcov')
     LOG.info('Generate MiniTests for Targets Ended')
 
@@ -487,28 +492,39 @@ def dofullrandom(directory):
 
 def experiment(i):
     res = init(i)
-    dofullrandom(i)
     df = res['df']
     tssize = res['tssize']
     
-    if subject == 'js':
-        # print 'taken'
-        for b in config.bugs:
-            # print 'targetting', b, config.bugs[b]
-            target = regression(df, config.bugs[b])
-            targetedtest(target,'{0}/regression.greedy.{1}'.format(i, b), merge_greedy)
-            targetedtest(target,'{0}/regression.roundrobin.{1}'.format(i, b), roundrobin_merge)
+    relations =[k for k in df.columns if '_relation'in k]
+    gr = df.groupby(relations)
+
+    LOG.info('Groups:{0}'.format(len(gr)))
+    for p, g in gr:
+        LOG.info('GLEN:{0} G:{1}'.format(len(g), p))
+
+    
             
     regressionsizes = [1,2,3,4,5,10,20]
+    random.shuffle(regressionsizes)
+    
+    
     for k in range(5):
         for r in regressionsizes:
             target = pick_target(df,tssize, 0.1, 0.3, r)
             if r != 1:
                 targetedtest(target,'{0}/greedy.{1}.{2}'.format(i, k, r), merge_greedy)
             targetedtest(target,'{0}/roundroubin.{1}.{2}'.format(i, k, r), roundrobin_merge)
-    
-    targetedtest(df,'{0}/lines-all-together'.format(i), merge_greedy)    
-    targetedtest(df,'{0}/lines-all-together'.format(i), roundrobin_merge)    
+
+    if subject == 'js':
+        for b in config.bugs:
+            # print 'targetting', b, config.bugs[b]
+            target = regression(df, config.bugs[b])
+            targetedtest(target,'{0}/regression.greedy.{1}'.format(i, b), merge_greedy)
+            targetedtest(target,'{0}/regression.roundrobin.{1}'.format(i, b), roundrobin_merge)
+
+
+    dofullrandom(i)    
+
 
 
 if __name__ == '__main__':
