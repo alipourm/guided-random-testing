@@ -6,9 +6,9 @@ import JSCONFIG
 
 
 def testgen(tc_name, conf):
-    status, output = run("python JSswarmup.py {0} {1} swarm.js".format(JSCONFIG.JSFUN_FUZ_PATH, conf))
+    status, output = run("python JSswarmup.py {0} {1} swarm.js {2}".format(JSCONFIG.JSFUN_FUZ_PATH, conf, tc_name + '.conf'))
     status, output = run("js -f swarm.js")
-    features = re.findall('/\*##(\d+)##\*/', output)
+   
 
     filtered = filter(lambda s: s.startswith("try"), output.split('\n'))
     # print output
@@ -19,11 +19,6 @@ def testgen(tc_name, conf):
             outfn.write(l + '\n')
         outfn.flush()
         outfn.close()
-        featurefile = open('{0}.conf'.format(tc_name), 'w')
-        for f in features:
-            featurefile.write(f + ' ')
-        featurefile.flush()
-        featurefile.close()
         return True
     else:
         return False

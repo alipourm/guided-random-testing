@@ -42,7 +42,7 @@ elif subject == 'js':
     LOG = logging.getLogger('JS')
     INIT_CONF = 'JSinit.cfg'
     SEEDTESTGEN_TIME = 1800
-    GUIDEDTESTGEN_TIME = 600
+    GUIDEDTESTGEN_TIME = 60
     tc_postfix = '.js'
 
 os.mkdir(sys.argv[2])
@@ -151,7 +151,7 @@ def add_features(df, coverage_files):
               df['f' + str(f)] += coverage
               feature_freq[int(f)] += 1
     except EOFError:
-      print cf
+       print cf
   return {'df': df,
           'feature_freq': feature_freq}
 
@@ -173,14 +173,18 @@ def cleanup_summarize(directory, filepattern):
 
 def get_feature_relations(coverage_files):
     df = load_data(coverage_files)
+    # print 'loading data done'
     data = add_features(df, coverage_files)
+    # print 'adding features  done'
     feature_freq = data['feature_freq']
+    # print 'frequecied done data done'
     df = data['df']
       # df = df1[df1['cov'] > 0]
     for f in range(consts.FEATURES_MIN, consts.FEATURES_MAX + 1):
         # print f
         r = float(feature_freq[f])/ len(coverage_files)
         df['f' + str(f) + '_relation'] = wilson_score_interval(df['cov'], df['f' + str(f)], r)
+        print 'after {0}'.format(f)
     return df
 
 
@@ -196,6 +200,10 @@ def get_feature_relations(coverage_files):
 
 def dump_coverage(f):
     c = Coverage(f)
+    if subject == 'js':
+        fout = open(f + '.out', 'w')
+        fout.write(c.output)
+        fout.close()
     # pline_cov = c.get_percent_line()
     # print line_cov
     l_cov = open(f + '.lcov', 'w')
@@ -365,9 +373,13 @@ def init(experiment_dir):
     LOG.info('Directory:{0} TSSIZE:{1}'.format(directory, testsuitesize))
     LOG.info('Calculating Targets Started')
     target_relation = get_feature_relations(glob.glob(directory + '/*.lcov'))
+    LOG.info('Calculating Targets Ended')
+
     cleanup_summarize(directory , '/*.lcov')
+    # print 'cleanup done'
     # print target_relation
     target_relation.to_csv('{0}/relations.csv'.format(directory))
+    # print 'tocsv done'
     return {'df': target_relation,
             'tssize': testsuitesize}
 
@@ -434,7 +446,7 @@ def targetedtest(targetsdf, experiment_dir, merge_function):
     configurations = targetsdf[relations].values
     targets = targetsdf.index
     newconfigurations = merge_function(configurations, targets)
-    print 'newconf', newconfigurations
+    # print 'newconf', newconfigurations
     for mode in modes:
         conffiles = []
         for k, clist in enumerate(newconfigurations):
@@ -494,15 +506,19 @@ def experiment(i):
     res = init(i)
     df = res['df']
     tssize = res['tssize']
-    
+    # print 'back from df'
     relations =[k for k in df.columns if '_relation'in k]
+    # print relations
+    # print 'before groupby df'
     gr = df.groupby(relations)
-
-    LOG.info('Groups:{0}'.format(len(gr)))
+    # print 'after groupby df'
+    # print 'gr', gr
+    
+    LOG.info('Groups:{0}'.format(len(gr.groups)))
     for p, g in gr:
         LOG.info('GLEN:{0} G:{1}'.format(len(g), p))
 
-    
+    # print 'before groupby df'
             
     regressionsizes = [1,2,3,4,5,10,20]
     random.shuffle(regressionsizes)
