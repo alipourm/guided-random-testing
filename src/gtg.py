@@ -42,7 +42,7 @@ elif subject == 'js':
     LOG = logging.getLogger('JS')
     INIT_CONF = 'JSinit.cfg'
     SEEDTESTGEN_TIME = 1800
-    GUIDEDTESTGEN_TIME = 60
+    GUIDEDTESTGEN_TIME = 600
     tc_postfix = '.js'
 
 os.mkdir(sys.argv[2])
@@ -201,9 +201,11 @@ def get_feature_relations(coverage_files):
 def dump_coverage(f):
     c = Coverage(f)
     if subject == 'js':
-        fout = open(f + '.out', 'w')
-        fout.write(c.output)
-        fout.close()
+        if 'ALL OK' not in c.output or 'ASSERT' in c.output:
+            LOG.info('ASSERT in:{0}'.format(f))
+            fout = open(f + '.out', 'w')
+            fout.write(c.output)
+            fout.close()
     # pline_cov = c.get_percent_line()
     # print line_cov
     l_cov = open(f + '.lcov', 'w')
@@ -399,7 +401,7 @@ def roundrobin_merge(configurations, targets):
         print 'Inequal target and confs'
         exit(1)
     k =  zip(configurations, targets)
-    print 'round robin end:', k
+    # print 'round robin end:', k
     return [(c, [t]) for (c,t) in k]
 
 
