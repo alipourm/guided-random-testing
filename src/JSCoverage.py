@@ -64,7 +64,7 @@ class Coverage:
             
         if status == 124: # timeout
             raise InfiniteLoopError(self.tc)
-
+        self.output = output
         return output
 
 
