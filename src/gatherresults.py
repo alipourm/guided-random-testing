@@ -15,6 +15,13 @@ else:
 initcov = np.array([])
 origtsize = 0
 
+def getMode(direcotry):
+    if 'greedy' in directory:
+        return "Greedy"
+    if 'round' in directory:
+        return "Round-robin"
+
+
 print '{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10}, {11}'.format('directory', 'mode', 'merge', 'beforemerge','target', 'newcov',  'initcov', 'tsize', 'origtsize', 'initratio', 'newratio', 'aftermerge')
 
 for logfile in logfile_list:
@@ -52,11 +59,17 @@ for logfile in logfile_list:
                 coverage = np.load(covfile)
                 if len(coverage) == 0:
                     continue
+                tot_initratio = 0
+                tot_newratio = 0
 		for target in targets:                
 			initratio = initcov[target]/ float(origtsize)
 			newratio = coverage[target]/float(tsize)
-                        aftermerge=re.findall('AfterMerge:(\d+),', line)[0]
-			print '{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11}'.format(directory, directory.split(os.sep)[-1], merge, len(targets), target, coverage[target],  initcov[target], tsize, origtsize, initratio, newratio, aftermerge)
+                        tot_initratio += initratio
+                        tot_newratio += newratio
+                initratio = tot_initratio / len(targets)
+                newratio = tot_newratio/ len(targets)
+                aftermerge=re.findall('AfterMerge:(\d+),', line)[0]
+                print '{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10}, {11}'.format(directory, directory.split(os.sep)[-1], merge, len(targets), coverage[target],  initcov[target], tsize, origtsize, initratio, newratio, aftermerge,getMode(directory))
 
             except IOError, IndexError:
                 pass
