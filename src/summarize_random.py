@@ -11,11 +11,12 @@ for root, directories, files in os.walk(sys.argv[1]):
     for f in files:
         if f.endswith("cov"):
             print "root {0}, file {1}".format(root, f)
-            k.append(np.load(f))
+            fname = os.path.join(root, f)
+            k.append(np.load(fname))
 
-    n = sum(k)
+    n = np.sum(k, axis=0)
     nf = os.path.join(root, "covsum.npy")
     print nf
-    np.dump(nf)
+    n.dump(nf)
 
     
