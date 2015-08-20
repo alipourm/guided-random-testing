@@ -1,0 +1,1 @@
+grep "BeforeMerge:1," *-debug.log | sed  -E 's/.*Directory:(.*) Target:\[([0-9]+)\].*/\1,\2/g' | sort| uniq
