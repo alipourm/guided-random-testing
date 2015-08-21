@@ -22,7 +22,7 @@ def getMode(direcotry):
         return "Round-robin"
 
 
-print '{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10}, {11}'.format('directory', 'mode', 'merge', 'beforemerge','target', 'newcov',  'initcov', 'tsize', 'origtsize', 'initratio', 'newratio', 'aftermerge')
+print '{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10}, {11}'.format('directory', 'mode', 'merge', 'beforemerge','target', 'newcov',  'initcov', 'tsize', 'origtsize', 'initratio', 'newratio', 'Mode')
 
 for logfile in logfile_list:
     for line in open(logfile):
@@ -68,6 +68,7 @@ for logfile in logfile_list:
                         tot_newratio += newratio
                 initratio = tot_initratio / len(targets)
                 newratio = tot_newratio/ len(targets)
+# 'directory', 'InclusionMode', 'Features', 'beforemerge','target', 'newcov',  'initcov', 'tsize', 'origtsize', 'initratio', 'newratio', 'MergeMode'
                 aftermerge=re.findall('AfterMerge:(\d+),', line)[0]
                 print '{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10}, {11}'.format(directory, directory.split(os.sep)[-1], merge, len(targets), coverage[target],  initcov[target], tsize, origtsize, initratio, newratio, aftermerge,getMode(directory))
 
