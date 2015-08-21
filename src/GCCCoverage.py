@@ -57,6 +57,30 @@ class Coverage:
 
         return output
 
+    
+    def get_mapping(self):
+        code_cov_map = {}
+        i = 0
+        gcovfiles = sorted(glob.glob('*.gcov'))
+        for f in gcovfiles:
+            for l in open(f).readlines():
+                    ls = l.strip().split(':')
+                    if (ls[0] == '-'):
+                        pass # none executable
+                    elif (ls[0] == "#####"):
+                        # not covered
+                        line_no = int(ls[1].strip())
+                        code_cov_map[f, line_no] = i
+                        i += 1
+                    elif ls[0].isdigit():
+                        # covered 
+                        line_no = int(ls[1].strip())
+                        code_cov_map[f, line_no] = i
+                        i += 1
+                    else:
+                        # logically funny, just to keep other things in the the case needed
+                        assert (0)
+        return code_cov_map
 
     def collect_coverage(self):
         gcovfiles = sorted(glob.glob('*.gcov'))
@@ -77,7 +101,7 @@ class Coverage:
                     else:
                         # logically funny, just to keep other things in the the case needed
                         assert (0)
-                        continue
+        
         
 
 

@@ -197,9 +197,17 @@ def get_feature_relations(coverage_files):
 
 
 
-
+first_time_coverage_calc = False
 def dump_coverage(f):
+    global first_time_coverage_calc
     c = Coverage(f)
+    if (not first_time_coverage_calc) and subject == 'gcc':
+        fname = 'coverage_map.p'
+        LOG.info("Dumping coverage map at: {0}".format(fname))
+        maps = c.get_mapping()
+        pickle.dump(maps, open(fname, 'wb'))
+        first_time_coverage_calc = True
+        exit(0)
     if subject == 'js':
         if 'ALL OK' not in c.output or 'ASSERT' in c.output:
             LOG.info('ASSERT in:{0}'.format(f))
