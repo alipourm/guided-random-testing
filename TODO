@@ -1,4 +1,5 @@
 - use clang to extract the AST, something like: clang -Xclang -ast-dump -fsyntax-only js.c
 - Currently, due to high I/O (reading files multiple times), loading of data is very slow. By using pandas dataframe, we can read coverage files only once. DONE
-- Document how to run the scripts.
-- check for differences in the distribution of coverage between generated test cases and the seed test cases.
+- Document how to run the scripts. LOW PRIORITY
+- check for differences in the distribution of coverage between generated test cases and the seed test cases. HIGH
+
