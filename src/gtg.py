@@ -208,7 +208,7 @@ def dump_coverage(f):
         maps = c.get_mapping()
         pickle.dump(maps, open(fname, 'wb'))
         first_time_coverage_calc = True
-        exit(0)
+       
     if subject == 'js':
         if 'ALL OK' not in c.output or 'ASSERT' in c.output:
             LOG.info('ASSERT in:{0}'.format(f))
