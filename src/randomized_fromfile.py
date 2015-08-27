@@ -2,7 +2,7 @@ import sys
 import random
 import time
 import glob
-
+import os
 infile = sys.argv[1]
 tries = int(sys.argv[2])
 
@@ -34,6 +34,30 @@ def merge(v1, v2):
         nv += b
     return nv
 
+for directory in ['noswarm', 'half-swarm', 'nosup']:
+    os.mkdir(directory)
+
+
+def dump_conf(number, solution):
+        print len(solution)
+        conf = []
+        for i, c in enumerate(solution):
+            if c == '1':
+                conf.append('++{0}'.format(i+1))
+            if directory == 'half-swarm':
+                if c == '2':
+                    conf.append('+{0}'.format(i+1))
+            
+            if directory == 'nosup':
+                if c == '2':
+                    conf.append('++{0}'.format(i+1))
+    
+            
+        t = '\n'.join(conf)
+        print directory, ''.join(conf)
+        with open("{0}/new{1}.cfg".format(directory, number), 'w') as f:
+            print len(solution), conf
+            f.write(t)
 
 for l in open(infile):
     v = l
@@ -110,16 +134,9 @@ for t in xrange(0,tries):
     if len(solution) < bestLen:
         bestLen = len(solution)
         print "NEW BEST SOLUTION, ON TRY",t,"OF LENGTH",bestLen
+
         for i, s in enumerate(solution):
-            with open("new{0}.cfg".format(i), 'w') as f:
-                print len(s), s
-                for j, r in enumerate(s[:50]):
-                    if r == '2':
-                        print 'I',
-                    elif r == '1': 
-                        print 'T',
-                    else:
-                        print 'S',
+            dump_conf(i, s)
     vectors = oldVectors
             
 elapsed = time.time() - startT
