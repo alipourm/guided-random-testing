@@ -546,7 +546,7 @@ def experiment(i):
             target = pick_target(df,tssize, 0.1, 0.3, r)
             if r != 1:
                 targetedtest(target,'{0}/greedy.{1}.{2}'.format(i, k, r), merge_greedy)
-
+            targetedtest(target,'{0}/aggressive.{1}.{2}'.format(i, k, r), merge_agrressive)
             targetedtest(target,'{0}/roundroubin.{1}.{2}'.format(i, k, r), roundrobin_merge)
 
     if subject == 'js':
