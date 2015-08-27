@@ -23,7 +23,22 @@ def getMode(direcotry):
     if 'ressive' in directory:
         return "Aggressive"
 
-print '{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10}'.format('directory', 'mode',  'beforemerge','target', 'newcov',  'initcov', 'tsize', 'origtsize', 'initratio', 'newratio', 'Mode')
+dictionary = {
+    'halfswarm': "Half-swarm",
+    'nosup': 'No-suppressors',
+    'noswarm': "Triggers-only"
+}
+
+def getInclusionMode(mode):
+    return dictionary[mode]
+
+print '{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10}'.format('directory', 'inclusionMode',
+                                                            'Features','target',
+                                                            'newcov',  'initcov',
+                                                            'tsize', 'origtsize',
+                                                            'initratio', 'newratio',
+                                                            'MergeMode'
+)
 
 for logfile in logfile_list:
     for line in open(logfile):
@@ -73,8 +88,9 @@ for logfile in logfile_list:
                 aftermerge=re.findall('AfterMerge:(\d+),', line)[0]
                 print '{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10}'.format(directory,
                                                                                   directory.split(os.sep)[-1],
-                                                                                  merge, len(targets),
-                                                                                  coverage[target], initcov[target], tsize,
+                                                                                  getInclusionMode(merge), len(targets),
+                                                                                  coverage[target],
+                                                                                  initcov[target], tsize,
                                                                                   origtsize, initratio, newratio,
                                                                                   getMode(directory))
 
