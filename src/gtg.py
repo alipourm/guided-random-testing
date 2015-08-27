@@ -10,6 +10,7 @@ import logging
 import sys
 import numpy as np
 import pandas as pd
+import aggressive
 # NOTEneed for paralleization -- bottleneck is coverage
 
 
@@ -423,6 +424,11 @@ def amRestrict(me, other):
 
 
 
+def merge_agrressive(configurations, targets):
+    m = aggressive.Agressive(configurations)
+    res = m.minimize()
+    return [(c, 0) for c in res]
+
 def merge_greedy(configurations, targets):
     if len(configurations) != len(targets):
         print 'Inequal target and confs'
@@ -530,7 +536,8 @@ def experiment(i):
 
     # print 'before groupby df'
             
-    regressionsizes = [1,2,3,4,5,10,20]
+    # regressionsizes = [1,2,3,4,5,10,20]
+    regressionsizes = [5,10,20]
     random.shuffle(regressionsizes)
     bugs = config.bugs.keys()
     print bugs
@@ -538,19 +545,22 @@ def experiment(i):
     random.shuffle(bugs)
     print bugs
 
+
+    for k in range(5):
+        for r in regressionsizes:
+            target = pick_target(df,tssize, 0.1, 0.3, r)
+            if r != 1:
+                targetedtest(target,'{0}/greedy.{1}.{2}'.format(i, k, r), merge_greedy)
+
+            targetedtest(target,'{0}/roundroubin.{1}.{2}'.format(i, k, r), roundrobin_merge)
+
     if subject == 'js':
         for b in bugs:
             # print 'targetting', b, config.bugs[b]
             target = regression(df, config.bugs[b])
             targetedtest(target,'{0}/regression.greedy.{1}'.format(i, b), merge_greedy)
             targetedtest(target,'{0}/regression.roundrobin.{1}'.format(i, b), roundrobin_merge)
-    
-    for k in range(5):
-        for r in regressionsizes:
-            target = pick_target(df,tssize, 0.1, 0.3, r)
-            if r != 1:
-                targetedtest(target,'{0}/greedy.{1}.{2}'.format(i, k, r), merge_greedy)
-            targetedtest(target,'{0}/roundroubin.{1}.{2}'.format(i, k, r), roundrobin_merge)
+            targetedtest(target,'{0}/regression.aggresive.{1}'.format(i, b), merge_agrressive)
 
 
 
