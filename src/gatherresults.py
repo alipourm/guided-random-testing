@@ -87,8 +87,8 @@ for logfile in logfile_list:
 # 'directory', 'InclusionMode', 'Features', 'beforemerge','target', 'newcov',  'initcov', 'tsize', 'origtsize', 'initratio', 'newratio', 'MergeMode'
                 aftermerge=re.findall('AfterMerge:(\d+),', line)[0]
                 print '{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10}'.format(directory,
-                                                                                  directory.split(os.sep)[-1],
-                                                                                  getInclusionMode(merge), len(targets),
+                                                                                  getInclusionMode(directory.split(os.sep)[-1]),
+                                                                                  merge, len(targets),
                                                                                   coverage[target],
                                                                                   initcov[target], tsize,
                                                                                   origtsize, initratio, newratio,
