@@ -1,6 +1,7 @@
 import sys
 import random
 import time
+import glob
 
 infile = sys.argv[1]
 tries = int(sys.argv[2])
@@ -109,7 +110,16 @@ for t in xrange(0,tries):
     if len(solution) < bestLen:
         bestLen = len(solution)
         print "NEW BEST SOLUTION, ON TRY",t,"OF LENGTH",bestLen
-        print solution
+        for i, s in enumerate(solution):
+            with open("new{0}.cfg".format(i), 'w') as f:
+                print len(s), s
+                for j, r in enumerate(s[:50]):
+                    if r == '2':
+                        print 'I',
+                    elif r == '1': 
+                        print 'T',
+                    else:
+                        print 'S',
     vectors = oldVectors
             
 elapsed = time.time() - startT
