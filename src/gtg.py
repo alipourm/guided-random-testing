@@ -425,7 +425,7 @@ def amRestrict(me, other):
 
 
 def merge_agrressive(configurations, targets):
-    m = aggressive.Agressive(configurations)
+    m = aggressive.Aggressive(configurations)
     res = m.minimize()
     return [(c, 0) for c in res]
 
