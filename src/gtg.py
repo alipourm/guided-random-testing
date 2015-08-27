@@ -539,11 +539,6 @@ def experiment(i):
     # regressionsizes = [1,2,3,4,5,10,20]
     regressionsizes = [5,10,20]
     random.shuffle(regressionsizes)
-    bugs = config.bugs.keys()
-    print bugs
-
-    random.shuffle(bugs)
-    print bugs
 
 
     for k in range(5):
@@ -555,8 +550,10 @@ def experiment(i):
             targetedtest(target,'{0}/roundroubin.{1}.{2}'.format(i, k, r), roundrobin_merge)
 
     if subject == 'js':
+        bugs = config.bugs.keys()
+        random.shuffle(bugs)
         for b in bugs:
-            # print 'targetting', b, config.bugs[b]
+         # print 'targetting', b, config.bugs[b]
             target = regression(df, config.bugs[b])
             targetedtest(target,'{0}/regression.greedy.{1}'.format(i, b), merge_greedy)
             targetedtest(target,'{0}/regression.roundrobin.{1}'.format(i, b), roundrobin_merge)
