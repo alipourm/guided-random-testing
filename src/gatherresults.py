@@ -17,7 +17,7 @@ origtsize = 0
 
 def getMode(direcotry):
     if 'greedy' in directory:
-        return "Greedy"
+        return "Subsumption"
     if 'round' in directory:
         return "Round-robin"
     if 'ressive' in directory:
