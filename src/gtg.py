@@ -536,8 +536,8 @@ def experiment(i):
 
     # print 'before groupby df'
             
-    # regressionsizes = [1,2,3,4,5,10,20]
-    regressionsizes = [5,10,20]
+    regressionsizes = [1,2,3,4,5,10,20]
+    # regressionsizes = [5,10,20]
     random.shuffle(regressionsizes)
 
 
