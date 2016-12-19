@@ -1,5 +1,4 @@
 import commands
-import logging
 import os
 import pickle
 import random
@@ -11,10 +10,15 @@ import sys
 import numpy as np
 import pandas as pd
 import aggressive
-# NOTEneed for paralleization -- bottleneck is coverage
+import myutils
 
 
 subject = sys.argv[1]
+myutils.BASE_DIRECTORY=sys.argv[2]
+print myutils.BASE_DIRECTORY
+
+
+
 print subject
 if subject == 'gcc':
     import GCCconsts as consts
@@ -30,6 +34,7 @@ elif subject == 'yaffs':
     import YAFFSConsts as consts
     from YAFFSCoverage import Coverage
     from YAFFSTestGen import testgen
+    import YAFFSCONFIG as config
     LOG = logging.getLogger('YAFFS')
     INIT_CONF = 'YAFFSinit.cfg'
     SEEDTESTGEN_TIME = 900
@@ -46,10 +51,8 @@ elif subject == 'js':
     GUIDEDTESTGEN_TIME = 600
     tc_postfix = '.js'
 
-os.mkdir(sys.argv[2])
-
-
-
+print myutils.BASE_DIRECTORY
+config.prepare(myutils.BASE_DIRECTORY)
 
 LOG.setLevel(logging.DEBUG)
 fh = logging.FileHandler('{0}/{1}-debug.log'.format(sys.argv[2], LOG.name), mode='w')
@@ -57,10 +60,6 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(messag
 fh.setFormatter(formatter)
 LOG.addHandler(fh)
 
-
-def run(cmd):
-    # print cmd
-    return commands.getstatusoutput(cmd)
 
 
 
@@ -236,7 +235,6 @@ def generate_tests(time_length, directory, confs):
   retrycount = 0
   newi = 0
   worthy = True
-
   # print 'confs:', confs
   while time.time()-start < time_length and worthy and len(confs) > 0:
         for conf in confs:
@@ -262,9 +260,9 @@ def generate_tests(time_length, directory, confs):
                     
                 # print 'Retrying', i
   if subject != 'js':
-      run('rm -f tc_*.c '.format(directory))
-  run('mv tc_* {0}'.format(directory))
-  run('mv target*.cfg {0}'.format(directory))
+      myutils.run('rm -f tc_*.c '.format(directory))
+  myutils.run('mv tc_* {0}'.format(directory))
+  myutils.run('mv target*.cfg {0}'.format(directory))
   return i
 
 
@@ -375,8 +373,31 @@ def get_conf(values, relations, mode):
     return '\n'.join(l)
 
 
-def init(experiment_dir):
 
+def get_inverse_conf(values, relations, mode):
+    l = []
+    z = zip(values, relations)
+    for x in z:
+        feature_str = get_feature(x[1])
+        if mode == 'fullrandom':
+            l.append('++' + feature_str)
+        elif mode == 'notrig':
+            if x[0] != 'T':
+                l.append('++' + feature_str)
+        else:
+            if x[0] == 'S':
+                l.append('++' + feature_str)
+            elif x[0] == 'I':
+                if mode == 'halfswarm':
+                    l.append('+' + feature_str)
+    # print mode, l
+    # print 'suppressors', sum([1 for s in values if s=='S'])
+    return '\n'.join(l)
+
+
+
+
+def init(experiment_dir):
     directory = os.path.join(experiment_dir, 'init')
     os.mkdir(directory)
     LOG.info('Generating Initial Test Suite Started')
@@ -456,6 +477,9 @@ def merge_greedy(configurations, targets):
     return results
 
 
+GOAL_HIT = False # True for focused and False for anti-focused.
+
+
 def targetedtest(targetsdf, experiment_dir, merge_function):
     os.mkdir(experiment_dir)
     relations =[k for k in targetsdf.columns if '_relation'in k]
@@ -469,7 +493,10 @@ def targetedtest(targetsdf, experiment_dir, merge_function):
                 # print 'k:', k
                 #'clist:', clist
                 (c, t) = clist
-                conf = get_conf(c, relations, mode)
+                if GOAL_HIT:
+                    conf = get_conf(c, relations, mode)
+                else:
+                    conf = get_inverse_conf(c, relations, mode)
                 # print '- m:{0} c:{1}'.format(merge_function.__name__, conf)
                 if conf == '':
                     continue
