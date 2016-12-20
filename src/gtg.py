@@ -37,8 +37,8 @@ elif subject == 'yaffs':
     import YAFFSCONFIG as config
     LOG = logging.getLogger('YAFFS')
     INIT_CONF = 'YAFFSinit.cfg'
-    SEEDTESTGEN_TIME = 30
-    GUIDEDTESTGEN_TIME = 10
+    SEEDTESTGEN_TIME = 900
+    GUIDEDTESTGEN_TIME = 300
     tc_postfix = '.c'
 elif subject == 'js':
     import JSCONSTS as consts

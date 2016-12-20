@@ -20,7 +20,7 @@ def prepare(rootdir):
     os.mkdir(rootdir)
     os.chdir(rootdir)
     print myutils.run('git clone {0}'.format(GITREPO))
-    #print myutils.run('git clone {0}'.format(gtg))
+    print myutils.run('git clone {0}'.format(gtg))
     os.chdir('yaffstest/yaffs2tester/')
     print myutils.run('make -f TestMakefile')
 
