@@ -167,7 +167,7 @@ def cleanup_summarize(directory, filepattern):
   covpattern = os.path.join(directory, "tc_*.lcov")
   confpattern = os.path.join(directory, "tc_*.conf")
   tcpatterns = os.path.join(directory, "tc_*.c") # we need to keep .js files
-  # run('rm -f {0} {1} {2}'.format(covpattern, confpattern, tcpatterns))
+  run('rm -f {0} {1} {2}'.format(covpattern, confpattern, tcpatterns))
 
 
 
@@ -563,19 +563,27 @@ def experiment(i):
 
     # print 'before groupby df'
             
-    regressionsizes = [1,2,3,4,5,10,20]
+    regressionsizes = [1,2,4,8,16]
     # regressionsizes = [5,10,20]
     random.shuffle(regressionsizes)
 
 
-    for k in range(5):
+    if True:
         for r in regressionsizes:
             target = pick_target(df,tssize, 0.1, 0.3, r)
             if r != 1:
-                targetedtest(target,'{0}/greedy.{1}.{2}'.format(i, k, r), merge_greedy)
-                targetedtest(target,'{0}/aggressive.{1}.{2}'.format(i, k, r), merge_agrressive)
-            targetedtest(target,'{0}/roundroubin.{1}.{2}'.format(i, k, r), roundrobin_merge)
+                targetedtest(target,'{0}/greedy_low.{1}.{2}'.format(i, k, r), merge_greedy)
+                targetedtest(target,'{0}/aggressive_low.{1}.{2}'.format(i, k, r), merge_agrressive)
+            targetedtest(target,'{0}/roundroubin_low.{1}.{2}'.format(i, k, r), roundrobin_merge)
 
+            target = pick_target(df,tssize, 0.31, 0.9, r)
+            if r != 1:
+                targetedtest(target,'{0}/greedy_hi.{1}.{2}'.format(i, k, r), merge_greedy)
+                targetedtest(target,'{0}/aggressive_hi.{1}.{2}'.format(i, k, r), merge_agrressive)
+            targetedtest(target,'{0}/roundroubin_hi.{1}.{2}'.format(i, k, r), roundrobin_merge)
+
+            
+"""
     if subject == 'js':
         bugs = config.bugs.keys()
         random.shuffle(bugs)
@@ -586,6 +594,7 @@ def experiment(i):
             targetedtest(target,'{0}/regression.roundrobin.{1}'.format(i, b), roundrobin_merge)
             targetedtest(target,'{0}/regression.aggresive.{1}'.format(i, b), merge_agrressive)
 
+""
 
 
     dofullrandom(i)    
