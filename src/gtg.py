@@ -167,7 +167,7 @@ def cleanup_summarize(directory, filepattern):
   covpattern = os.path.join(directory, "tc_*.lcov")
   confpattern = os.path.join(directory, "tc_*.conf")
   tcpatterns = os.path.join(directory, "tc_*.c") # we need to keep .js files
-  run('rm -f {0} {1} {2}'.format(covpattern, confpattern, tcpatterns))
+  myutils.run('rm -f {0} {1} {2}'.format(covpattern, confpattern, tcpatterns))
 
 
 
@@ -583,7 +583,7 @@ def experiment(i):
             targetedtest(target,'{0}/roundroubin_hi.{1}.{2}'.format(i, k, r), roundrobin_merge)
 
             
-"""
+    """
     if subject == 'js':
         bugs = config.bugs.keys()
         random.shuffle(bugs)
@@ -594,7 +594,7 @@ def experiment(i):
             targetedtest(target,'{0}/regression.roundrobin.{1}'.format(i, b), roundrobin_merge)
             targetedtest(target,'{0}/regression.aggresive.{1}'.format(i, b), merge_agrressive)
 
-""
+    """
 
 
     dofullrandom(i)    
@@ -603,4 +603,3 @@ def experiment(i):
 
 if __name__ == '__main__':
     experiment(sys.argv[2])
-
