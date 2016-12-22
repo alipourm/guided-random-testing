@@ -571,12 +571,14 @@ def experiment(i):
     if True:
         for r in regressionsizes:
             target = pick_target(df,tssize, 0.1, 0.3, r)
+            k = 1
             if r != 1:
-                targetedtest(target,'{0}/greedy_low.{1}.{2}'.format(i, k, r), merge_greedy)
+                targetedtest(target,'{0}/greedy_low.{1}.{2}'.format(i,k, r), merge_greedy)
                 targetedtest(target,'{0}/aggressive_low.{1}.{2}'.format(i, k, r), merge_agrressive)
             targetedtest(target,'{0}/roundroubin_low.{1}.{2}'.format(i, k, r), roundrobin_merge)
 
             target = pick_target(df,tssize, 0.31, 0.9, r)
+            k = 2
             if r != 1:
                 targetedtest(target,'{0}/greedy_hi.{1}.{2}'.format(i, k, r), merge_greedy)
                 targetedtest(target,'{0}/aggressive_hi.{1}.{2}'.format(i, k, r), merge_agrressive)
