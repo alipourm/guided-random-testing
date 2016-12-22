@@ -167,7 +167,7 @@ def cleanup_summarize(directory, filepattern):
   covpattern = os.path.join(directory, "tc_*.lcov")
   confpattern = os.path.join(directory, "tc_*.conf")
   tcpatterns = os.path.join(directory, "tc_*.c") # we need to keep .js files
-  myutils.run('rm -f {0} {1} {2}'.format(covpattern, confpattern, tcpatterns))
+  # myutils.run('rm -f {0} {1} {2}'.format(covpattern, confpattern, tcpatterns))
 
 
 
