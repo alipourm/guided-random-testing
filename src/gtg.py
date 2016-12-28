@@ -217,9 +217,10 @@ def dump_coverage(f):
     # pline_cov = c.get_percent_line()
     # print line_cov
     l_cov = open(f + '.lcov', 'w')
-    line_cov = c.get_l_cov()
+    branch_cov = c.get_b_cov()
+    #line_cov = c.get_l_cov()
     # LOG.info('line_cov: {0} | {1} out of {2}'.format(pline_cov, np.sum(line_cov), len(line_cov)))
-    pickle.dump(line_cov, l_cov)
+    pickle.dump(branch_cov, l_cov)
 
   
 
@@ -404,6 +405,7 @@ def init(experiment_dir):
     testsuitesize = generate_tests(SEEDTESTGEN_TIME, directory, [INIT_CONF])
     LOG.info('Directory:{0} TSSIZE:{1}'.format(directory, testsuitesize))
     LOG.info('Calculating Targets Started')
+    print 'LCOV', directory + '/*.lcov'
     target_relation = get_feature_relations(glob.glob(directory + '/*.lcov'))
     LOG.info('Calculating Targets Ended')
 
