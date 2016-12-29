@@ -41,7 +41,7 @@ class Coverage:
         olddir = os.getcwd()
 #        os.chdir(self.OBJDIR)
         for f in glob.glob(self.OBJDIR +'*.gcno'):
-            gcov_cmd = "gcov -o {0} {1}".format(self.OBJDIR, f)
+            gcov_cmd = "gcov -b -o {0} {1}".format(self.OBJDIR, f)
             status, output = execute(gcov_cmd)
 #        os.chdir(olddir)
         self.collect_coverage()
@@ -58,50 +58,74 @@ class Coverage:
         return output
 
     
-    def get_mapping(self):
-        code_cov_map = {}
-        i = 0
-        gcovfiles = sorted(glob.glob('*.gcov'))
-        for f in gcovfiles:
-            for l in open(f).readlines():
-                    ls = l.strip().split(':')
-                    if (ls[0] == '-'):
-                        pass # none executable
-                    elif (ls[0] == "#####"):
-                        # not covered
-                        line_no = int(ls[1].strip())
-                        code_cov_map[f, line_no] = i
-                        i += 1
-                    elif ls[0].isdigit():
-                        # covered 
-                        line_no = int(ls[1].strip())
-                        code_cov_map[f, line_no] = i
-                        i += 1
-                    else:
-                        # logically funny, just to keep other things in the the case needed
-                        assert (0)
-        return code_cov_map
+    # def get_mapping(self):
+        #
+        # for f in gcovfiles:
+        #     for l in open(f).readlines():
+        #             ls = l.strip().split(':')
+        #             if (ls[0] == '-'):
+        #                 pass # none executable
+        #             elif (ls[0] == "#####"):
+        #                 # not covered
+        #                 line_no = int(ls[1].strip())
+        #                 code_cov_map[f, line_no] = i
+        #                 i += 1
+        #             elif ls[0].isdigit():
+        #                 # covered
+        #                 line_no = int(ls[1].strip())
+        #                 code_cov_map[f, line_no] = i
+        #                 i += 1
+        #             else:
+        #                 # logically funny, just to keep other things in the the case needed
+        #                 assert (0)
+        # return code_cov_map
 
     def collect_coverage(self):
         gcovfiles = sorted(glob.glob('*.gcov'))
+
         for f in gcovfiles:
             for l in open(f).readlines():
-                    ls = l.strip().split(':')
-                    if (ls[0] == '-'):
-                        pass # none executable
-                    elif (ls[0] == "#####"):
-                        # not covered
-                        self.line_cov.append(0)
-                        self.line_ncov.append(0)
-                    elif ls[0].isdigit():
-                        # covered 
-                        none = False
-                        self.line_cov.append(1)
-                        self.line_ncov.append(int(ls[0]))
+                ls = l.strip().split(':')
+                if (ls[0] == '-'):
+                    pass # none executable
+                elif (ls[0] == "#####"):
+                    # not covered
+                    self.line_cov.append(0)
+                    self.line_ncov.append(0)
+                elif ls[0].isdigit():
+                    # covered
+                    self.line_cov.append(1)
+                    self.line_ncov.append(int(ls[0]))
+
+                elif l.startswith('branch'):
+                    if 'never' in l:
+                        self.branch_cov.append(0)
                     else:
-                        # logically funny, just to keep other things in the the case needed
-                        assert (0)
-        
+                        bparts = l.strip().split()
+                        if bparts[2] == '0%':
+                            self.branch_cov.append(0)
+                        else:
+                            self.branch_cov.append(1)
+
+
+        # for f in gcovfiles:
+        #     for l in open(f).readlines():
+        #             ls = l.strip().split(':')
+        #             if (ls[0] == '-'):
+        #                 pass # none executable
+        #             elif (ls[0] == "#####"):
+        #                 # not covered
+        #                 self.line_cov.append(0)
+        #                 self.line_ncov.append(0)
+        #             elif ls[0].isdigit():
+        #                 # covered
+        #                 none = False
+        #                 self.line_cov.append(1)
+        #                 self.line_ncov.append(int(ls[0]))
+        #             else:
+        #                 # logically funny, just to keep other things in the the case needed
+        #                 assert (0)
+        #
         
 
 
@@ -129,6 +153,10 @@ class Coverage:
 
     def get_l_cov(self):
         return self.line_cov
+
+    def get_b_cov(self):
+        return self.branch_cov
+
 
     def get_percent_line(self):
         return float(sum(self.line_cov))/len(self.line_cov)
