@@ -2,7 +2,6 @@ import sys
 import YAFFSCONFIG
 import commands
 import glob
-from numpy import sum
 
 
 class InfiniteLoopError(Exception):
@@ -43,7 +42,7 @@ class Coverage:
         execute("rm -rf " + "*.gcov")
         self.executetc()
         for f in glob.glob(self.OBJDIR +'*.gcda'):
-            gcov_cmd = "gcov -b -i -o {0} {1}".format(self.OBJDIR, f)
+            gcov_cmd = "gcov -b -o {0} {1}".format(self.OBJDIR, f)
             status, output = execute(gcov_cmd)
         self.collect_coverage()
 
@@ -74,9 +73,10 @@ class Coverage:
     """
 
     def collect_coverage(self):
-        gcovfiles = ['yaffs2.gcda.gcov']
+        gcovfiles = ['yaffs2.c.gcov']
         for f in gcovfiles:
             for l in open(f).readlines():
+                """
                 # ignore line counts
                 if not l.startswith('lcount'):
                     lparts = l.strip().split(':')
@@ -91,28 +91,32 @@ class Coverage:
                             self.branch_cov.append(0)
                     elif lparts[0] == 'function':
                             function_line, function_count, function_name = map(lambda s: s.strip(), lparts[1].split(','))
+                """
 
 
-    """
 
-                    ls = l.strip().split(':')
-                    if (ls[0] == '-'):
-                        pass # none executable
-                    elif (ls[0] == "#####"):
-                        # not covered
-                        self.line_cov.append(0)
-                        self.line_ncov.append(0)
-                    elif ls[0].isdigit():
-                        # covered 
-                        none = False
-                        self.line_cov.append(1)
-                        self.line_ncov.append(int(ls[0]))
+                ls = l.strip().split(':')
+                if (ls[0] == '-'):
+                    pass # none executable
+                elif (ls[0] == "#####"):
+                    # not covered
+                    self.line_cov.append(0)
+                    self.line_ncov.append(0)
+                elif ls[0].isdigit():
+                    # covered
+                    self.line_cov.append(1)
+                    self.line_ncov.append(int(ls[0]))
+
+                elif l.startswith('branch'):
+                    if 'never' in l:
+                        self.branch_cov.append(0)
                     else:
-                        # logically funny, just to keep other things in the the case needed
-                        assert (0)
-                        continue
-        
-    """
+                        bparts = l.strip().split()
+                        if bparts[2] == '0%':
+                            self.branch_cov.append(0)
+                        else:
+                            self.branch_cov.append(1)
+
     def choose(self, mode):
         possibleModes = ["line","n_line", "fun","n_fun", "branch"]
             
