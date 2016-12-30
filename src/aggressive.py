@@ -115,4 +115,4 @@ class Aggressive():
                 res = [toSTI(v) for v in solution]
                 return res
             vectors = oldVectors
-
+        return vectors
