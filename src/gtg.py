@@ -24,6 +24,8 @@ if subject == 'gcc':
     import GCCconsts as consts
     from GCCCoverage import Coverage
     from GCCTestGen import testgen
+    import GCCCONFIG as config
+
     LOG = logging.getLogger('GCC')
     INIT_CONF = 'GCCinit.cfg'
     SEEDTESTGEN_TIME = 3600
