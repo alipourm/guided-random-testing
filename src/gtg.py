@@ -28,7 +28,7 @@ if subject == 'gcc':
 
     LOG = logging.getLogger('GCC')
     INIT_CONF = 'GCCinit.cfg'
-    SEEDTESTGEN_TIME = 3600
+    SEEDTESTGEN_TIME = 3000
     GUIDEDTESTGEN_TIME = 600
     tc_postfix = '.c'
 
